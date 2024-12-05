@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "741888869187",
+    "project_id": "walking-undead",
+    "storage_bucket": "walking-undead.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741888869187:android:058b94f8625ba1c5b3a5f6",
+        "android_client_info": {
+          "package_name": "com.example.walkingundead"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDFDZIBCRvlcyKlLbs2k_IN6OwGjVEo08"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
