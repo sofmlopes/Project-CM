@@ -27,6 +27,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.walkingundead.navigation.Screens
+import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.AuthResult
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
@@ -35,14 +37,14 @@ import kotlinx.coroutines.tasks.await
 
 @Composable
 fun Authentication(navController: NavController) {
-    val scope =
-        rememberCoroutineScope()  // This gives us a CoroutineScope tied to the Composable lifecycle
+    val authRepository = remember { RepositoryProvider.authRepository }
+    val scope = rememberCoroutineScope()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    var authenticationResult by remember { mutableStateOf("Not authenticated") }
+    var authenticated by remember { mutableStateOf(authRepository.getAuthState()) }
 
     Box(
         modifier = Modifier
@@ -88,18 +90,16 @@ fun Authentication(navController: NavController) {
                     // Launch the coroutine when the button is clicked
                     scope.launch {
                         try {
-                            // Make sure to replace 'email' and 'password' with actual values
-                            // val email = "miguelrmsilva@gmail.com"
-                            // val password = "123123123"
-                            val authResult =
-                                Firebase.auth.signInWithEmailAndPassword(email, password).await()
+                            authRepository.signIn(email, password)
 
-                            // You can now use the authResult or navigate
-                            authenticationResult = "Authenticated successfully! 😊"
-                            println("Authentication successful: ${authResult.user?.email}")
+                            if (authRepository.getAuthState()) {
+                                authenticated = true
+                            } else {
+                                authenticated = false
+                            }
+
                         } catch (e: Exception) {
-                            // Handle any authentication errors here
-                            println("Authentication failed: ${e.message}")
+
                         }
                     }
                 }
@@ -109,9 +109,15 @@ fun Authentication(navController: NavController) {
 
             Spacer(Modifier.height(50.dp))
 
-            Text(
-                text = authenticationResult
-            )
+            if (authenticated) {
+                Text(
+                    text = "Authenticated successfully! 😊"
+                )
+            } else {
+                Text(
+                    text = "Authentication failed 🥲"
+                )
+            }
 
             Spacer(Modifier.height(50.dp))
 
