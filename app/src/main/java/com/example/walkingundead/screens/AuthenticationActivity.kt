@@ -1,7 +1,9 @@
 package com.example.walkingundead.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -21,6 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -28,6 +32,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.walkingundead.R
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.utilities.AuthResult
@@ -62,7 +67,20 @@ fun Authentication(navController: NavController) {
 
             WalkingUndeadLogo()
 
-            Spacer(Modifier.height(50.dp))
+            Spacer(Modifier.height(10.dp))
+
+            Box(
+                modifier = Modifier.padding(horizontal = 50.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.zombie),
+                    contentDescription = "Sample Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
 
             TextField(
                 value = email,
@@ -93,6 +111,7 @@ fun Authentication(navController: NavController) {
 
             Row {
                 Button(
+                    shape = RoundedCornerShape(6.dp),
                     onClick = {
                         // Launch the coroutine when the button is clicked
                         scope.launch {
@@ -118,6 +137,7 @@ fun Authentication(navController: NavController) {
                 Spacer(Modifier.width(20.dp))
 
                 Button(
+                    shape = RoundedCornerShape(6.dp),
                     onClick = {
                         // Launch the coroutine when the button is clicked
                         scope.launch {
