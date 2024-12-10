@@ -99,6 +99,15 @@ fun Authentication(navController: NavController) {
                     Text("Log Out")
                 }
 
+                Button(
+                    shape = RoundedCornerShape(6.dp),
+                    onClick = {
+                        navController.navigate(Screens.Map.route)
+                    }
+                ) {
+                    Text("Go to Map")
+                }
+
             } else {
                 TextField(
                     value = email,
