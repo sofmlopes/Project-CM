@@ -1,7 +1,6 @@
 package com.example.walkingundead.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -14,7 +13,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,12 +33,7 @@ import androidx.navigation.NavController
 import com.example.walkingundead.R
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
-import com.example.walkingundead.utilities.AuthResult
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @Composable
 fun Authentication(navController: NavController) {
@@ -51,7 +44,7 @@ fun Authentication(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    var authenticated by remember { mutableStateOf(authRepository.getAuthState()) }
+    var authenticated by remember { mutableStateOf(authRepository.isAuthenticated()) }
 
     Box(
         modifier = Modifier
@@ -74,7 +67,7 @@ fun Authentication(navController: NavController) {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.zombie),
-                    contentDescription = "Sample Image",
+                    contentDescription = "Cute zombie",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -82,59 +75,11 @@ fun Authentication(navController: NavController) {
 
             Spacer(Modifier.height(10.dp))
 
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Email") },
-                placeholder = { Text("Enter your email") }
-            )
+            //If logged in just show email and option to logout
+            if (authenticated) {
+                Text("Authenticated as ${authRepository.getEmail()}")
 
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Password") },
-                placeholder = { Text("Enter your password") },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
-                    val icon = if (passwordVisible) Icons.Filled.Lock else Icons.Filled.Search
-                    val description = if (passwordVisible) "Hide password" else "Show password"
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = icon, contentDescription = description)
-                    }
-                }
-            )
-
-            Spacer(Modifier.height(25.dp))
-
-            Row {
-                Button(
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = {
-                        // Launch the coroutine when the button is clicked
-                        scope.launch {
-                            try {
-                                authRepository.signIn(email, password)
-
-                                if (authRepository.getAuthState()) {
-                                    authenticated = true
-                                    navController.navigate(Screens.Map.route)
-                                } else {
-                                    authenticated = false
-                                }
-
-                            } catch (e: Exception) {
-
-                            }
-                        }
-                    }
-                ) {
-                    Text("Login")
-                }
-
-                Spacer(Modifier.width(20.dp))
+                Spacer(Modifier.height(25.dp))
 
                 Button(
                     shape = RoundedCornerShape(6.dp),
@@ -142,13 +87,8 @@ fun Authentication(navController: NavController) {
                         // Launch the coroutine when the button is clicked
                         scope.launch {
                             try {
-                                authRepository.register(email, password)
-
-                                if (authRepository.getAuthState()) {
-                                    authenticated = true
-                                } else {
-                                    authenticated = false
-                                }
+                                authRepository.logOut()
+                                authenticated = false
 
                             } catch (e: Exception) {
 
@@ -156,12 +96,92 @@ fun Authentication(navController: NavController) {
                         }
                     }
                 ) {
-                    Text("Register")
+                    Text("Log Out")
+                }
+
+            } else {
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Email") },
+                    placeholder = { Text("Enter your email") }
+                )
+
+                TextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Password") },
+                    placeholder = { Text("Enter your password") },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                        val icon = if (passwordVisible) Icons.Filled.Lock else Icons.Filled.Search
+                        val description = if (passwordVisible) "Hide password" else "Show password"
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = icon, contentDescription = description)
+                        }
+                    }
+                )
+
+                Spacer(Modifier.height(25.dp))
+
+                Row {
+                    Button(
+                        shape = RoundedCornerShape(6.dp),
+                        onClick = {
+                            // Launch the coroutine when the button is clicked
+                            scope.launch {
+                                try {
+                                    authRepository.signIn(email, password)
+
+                                    if (authRepository.isAuthenticated()) {
+                                        authenticated = true
+                                        navController.navigate(Screens.Map.route)
+                                    } else {
+                                        authenticated = false
+                                    }
+
+                                } catch (e: Exception) {
+
+                                }
+                            }
+                        }
+                    ) {
+                        Text("Login")
+                    }
+
+                    Spacer(Modifier.width(20.dp))
+
+                    Button(
+                        shape = RoundedCornerShape(6.dp),
+                        onClick = {
+                            // Launch the coroutine when the button is clicked
+                            scope.launch {
+                                try {
+                                    authRepository.register(email, password)
+
+                                    if (authRepository.isAuthenticated()) {
+                                        authenticated = true
+                                    } else {
+                                        authenticated = false
+                                    }
+
+                                } catch (e: Exception) {
+
+                                }
+                            }
+                        }
+                    ) {
+                        Text("Register")
+                    }
                 }
             }
 
             Spacer(Modifier.height(50.dp))
 
+            /*
             if (authenticated) {
                 Text(
                     text = "Authenticated successfully! 😊"
@@ -171,7 +191,7 @@ fun Authentication(navController: NavController) {
                     text = "Authentication failed 🥲"
                 )
             }
-
+            */
         }
     }
 }

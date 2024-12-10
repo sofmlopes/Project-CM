@@ -37,7 +37,7 @@ fun MapScreen(navController: NavController) { //o nome da função tem que ser a
         {
 
             Text(
-                text = "Authenticated as ${authRepository.email}"
+                text = "Authenticated as ${authRepository.getEmail()}"
             )
 
             Text(

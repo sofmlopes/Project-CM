@@ -7,16 +7,11 @@ import kotlinx.coroutines.tasks.await
 
 class AuthenticationService() {
 
-    var email: String? = null
-    var authtenticated = false
-
     suspend fun signIn(email: String, password: String): AuthResult {
 
         return try {
 
             val authResult = Firebase.auth.signInWithEmailAndPassword(email, password).await()
-            this.email = email
-            authtenticated = true
             AuthResult.SUCCESS
 
         } catch (e: Exception) {
@@ -29,8 +24,6 @@ class AuthenticationService() {
         return try {
 
             val authResult = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
-            this.email = email
-            authtenticated = true
             AuthResult.SUCCESS
 
         } catch (e: Exception) {
@@ -38,8 +31,16 @@ class AuthenticationService() {
         }
     }
 
-    fun getAuthState(): Boolean {
-        return authtenticated
+    suspend fun logOut() {
+        Firebase.auth.signOut()
+    }
+
+    fun isAuthenticated(): Boolean {
+        return Firebase.auth.currentUser != null
+    }
+
+    fun getEmail(): String {
+        return Firebase.auth.currentUser?.email as String
     }
 
     //mariajoaquina@gmail.com
