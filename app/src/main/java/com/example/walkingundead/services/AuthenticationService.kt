@@ -1,7 +1,6 @@
 package com.example.walkingundead.services
 
 import com.example.walkingundead.utilities.AuthResult
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
@@ -25,8 +24,25 @@ class AuthenticationService() {
         }
     }
 
+    suspend fun register(email: String, password: String): AuthResult {
+
+        return try {
+
+            val authResult = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+            this.email = email
+            authtenticated = true
+            AuthResult.SUCCESS
+
+        } catch (e: Exception) {
+            AuthResult.FAILED
+        }
+    }
+
     fun getAuthState(): Boolean {
         return authtenticated
     }
+
+    //mariajoaquina@gmail.com
+    //123123
 
 }

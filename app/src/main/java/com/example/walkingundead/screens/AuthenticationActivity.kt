@@ -21,10 +21,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
@@ -58,6 +60,10 @@ fun Authentication(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
+            WalkingUndeadLogo()
+
+            Spacer(Modifier.height(50.dp))
+
             TextField(
                 value = email,
                 onValueChange = { email = it },
@@ -85,26 +91,53 @@ fun Authentication(navController: NavController) {
 
             Spacer(Modifier.height(25.dp))
 
-            Button(
-                onClick = {
-                    // Launch the coroutine when the button is clicked
-                    scope.launch {
-                        try {
-                            authRepository.signIn(email, password)
+            Row {
+                Button(
+                    onClick = {
+                        // Launch the coroutine when the button is clicked
+                        scope.launch {
+                            try {
+                                authRepository.signIn(email, password)
 
-                            if (authRepository.getAuthState()) {
-                                authenticated = true
-                            } else {
-                                authenticated = false
+                                if (authRepository.getAuthState()) {
+                                    authenticated = true
+                                    navController.navigate(Screens.Map.route)
+                                } else {
+                                    authenticated = false
+                                }
+
+                            } catch (e: Exception) {
+
                             }
-
-                        } catch (e: Exception) {
-
                         }
                     }
+                ) {
+                    Text("Login")
                 }
-            ) {
-                Text("Login")
+
+                Spacer(Modifier.width(20.dp))
+
+                Button(
+                    onClick = {
+                        // Launch the coroutine when the button is clicked
+                        scope.launch {
+                            try {
+                                authRepository.register(email, password)
+
+                                if (authRepository.getAuthState()) {
+                                    authenticated = true
+                                } else {
+                                    authenticated = false
+                                }
+
+                            } catch (e: Exception) {
+
+                            }
+                        }
+                    }
+                ) {
+                    Text("Register")
+                }
             }
 
             Spacer(Modifier.height(50.dp))
@@ -119,16 +152,32 @@ fun Authentication(navController: NavController) {
                 )
             }
 
-            Spacer(Modifier.height(50.dp))
-
-            Button(
-                onClick = {
-                    navController.navigate(route = Screens.Map.route)
-                }
-            ) {
-                Text("GO TO MAP WOOO")
-            }
-
         }
+    }
+}
+
+@Composable
+fun WalkingUndeadLogo() {
+    Row {
+        Text(
+            text = "Walking ",
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+        )
+
+        Text(
+            text = "Un",
+            color = Color.Red,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+        )
+
+        Text(
+            text = "Dead",
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+        )
     }
 }

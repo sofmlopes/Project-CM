@@ -19,6 +19,7 @@ fun NavGraph (navController: NavHostController) {
         composable(route = Screens.Authentication.route){
             Authentication(navController = navController)
         }
+
         composable(route = Screens.Map.route){
             MapScreen(navController = navController)
         }
