@@ -19,9 +19,10 @@ import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
 
 @Composable
-fun MapScreen(navController: NavController) { //o nome da função tem que ser assim pq há outra do kotlin com esse nome
+fun MapScreen() { //o nome da função tem que ser assim pq há outra do kotlin com esse nome
 
     val authRepository = remember { RepositoryProvider.authRepository }
+    val navController = remember { RepositoryProvider.navController }
 
     Box(
         modifier = Modifier

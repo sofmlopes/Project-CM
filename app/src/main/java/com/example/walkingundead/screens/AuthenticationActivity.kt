@@ -36,8 +36,10 @@ import com.example.walkingundead.provider.RepositoryProvider
 import kotlinx.coroutines.launch
 
 @Composable
-fun Authentication(navController: NavController) {
+fun Authentication() {
     val authRepository = remember { RepositoryProvider.authRepository }
+    val navController = remember { RepositoryProvider.navController }
+
     val scope = rememberCoroutineScope()
 
     var email by remember { mutableStateOf("") }

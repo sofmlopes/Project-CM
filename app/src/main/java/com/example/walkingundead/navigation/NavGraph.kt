@@ -17,11 +17,11 @@ fun NavGraph (navController: NavHostController) {
     )
     {
         composable(route = Screens.Authentication.route){
-            Authentication(navController = navController)
+            Authentication()
         }
 
         composable(route = Screens.Map.route){
-            MapScreen(navController = navController)
+            MapScreen()
         }
     }
 

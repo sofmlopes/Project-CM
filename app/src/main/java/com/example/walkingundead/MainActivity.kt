@@ -1,20 +1,43 @@
 package com.example.walkingundead
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.walkingundead.navigation.NavGraph
+import com.example.walkingundead.navigation.Screens
+import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.screens.MapScreen
 import com.example.walkingundead.ui.theme.WalkingUnDeadTheme
 
 class MainActivity : ComponentActivity() {
-    /*
-    // define the global variable
-    private lateinit var question1: TextView
-    // Add button Move to Activity
-    private lateinit var next_Activity_button: Button
-    */
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -23,30 +46,88 @@ class MainActivity : ComponentActivity() {
         setContent {
             WalkingUnDeadTheme {
                 val navController = rememberNavController()
+                RepositoryProvider.setNavController(navController)
+
                 NavGraph(navController = navController)
-                /*
-                // by ID we can use each component which id is assign in xml file
-                // use findViewById() to get the Button
-                next_Activity_button = findViewById(R.id.first_activity_button)
-                question1 = findViewById(R.id.question1_id)
-
-                // In question1 get the TextView use by findViewById()
-                // In TextView set question Answer for message
-                question1.text = "Q1 - How to pass the data between activities in Android? Ans - Intent".trimIndent()
-
-                // Add_button add clicklistener
-                next_Activity_button.setOnClickListener {
-                    // Intents are objects of the android.content.Intent type. Your code can send them to the Android system defining
-                    // the components you are targeting. Intent to start an activity called SecondActivity with the following code.
-                    val intent = Intent(this, SecondActivity::class.java)
-                    // start the activity connect to the specified class
-                    startActivity(intent)
-                }
-
-                para composable não me parece dar jeito fazer assim
-                */
             }
         }
     }
 }
+
+
+/*
+
+@Composable
+fun OurBottomAppBar() {
+    val navigationController = rememberNavController()
+    val context = LocalContext.current.applicationContext
+    val selected = remember {
+        mutableStateOf(Icons.Default.Home)
+    }
+
+    Scaffold(
+        bottomBar = {
+            BottomAppBar(
+                containerColor = Color.Green
+            ) {
+                IconButton(onClick = {
+                    selected.value = Icons.Default.Home
+                    navigationController.navigate(Screens.Authentication.route) {
+                        popUpToId.dec()
+                    }
+                }) {
+                    Icon(
+                        Icons.Default.Home,
+                        contentDescription = null,
+                        modifier = Modifier.size(26.dp),
+                        tint = if (selected.value == Icons.Default.Home) Color.White else Color.DarkGray
+                    )
+                }
+
+                IconButton(onClick = {
+                    selected.value = Icons.Default.LocationOn
+                    navigationController.navigate(Screens.Map.route) {
+                        popUpToId.dec()
+                    }
+                }) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(26.dp),
+                        tint = if (selected.value == Icons.Default.LocationOn) Color.White else Color.DarkGray
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center,
+                )
+                {
+                    FloatingActionButton(onClick = { Toast.makeText(context, "Open Bottom Sheet", Toast.LENGTH_SHORT).show() }) {
+                        Icon(Icons.Default.Add, contentDescription = null, tint = Color.Green)
+                    }
+
+                }
+            }
+        }
+    ) { paddingValues ->
+        NavHost(navController = navigationController,
+            startDestination = Screens.Map.route,
+            modifier = Modifier.padding(paddingValues))
+        {
+            composable(Screens.Map.route) { MapScreen() }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun BottomBarPreview() {
+    WalkingUnDeadTheme {
+        OurBottomAppBar()
+    }
+}
+*/
 
