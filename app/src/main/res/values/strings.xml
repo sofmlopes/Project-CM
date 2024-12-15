@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Walking UnDead</string>
+    <string name="google_maps_api_key">AIzaSyDBbIK2b1LW1eEVWhM8pmsRgeycprexyYo</string>
 </resources>

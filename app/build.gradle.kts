@@ -75,4 +75,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-database")
+
+    //Google Maps
+    implementation ("com.google.android.gms:play-services-maps:19.0.0")
+    implementation ("com.google.maps.android:maps-compose:2.9.0")
 }

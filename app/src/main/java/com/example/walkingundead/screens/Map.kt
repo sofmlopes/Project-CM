@@ -14,6 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
 fun Map() {
@@ -21,10 +27,18 @@ fun Map() {
     val authRepository = remember { RepositoryProvider.authRepository }
     val navController = remember { RepositoryProvider.navController }
 
+    val cameraPositionState = rememberCameraPositionState {
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(38.736946, -9.142685), 10f) // San Francisco as an example
+    }
+
+    // Define the marker position
+    val position = LatLng(38.736946, -9.142685)
+
+    // Create a MarkerState with the position
+    val markerState = rememberMarkerState(position = position)
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(all = 20.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -37,6 +51,16 @@ fun Map() {
             Text(
                 text = "Authenticated as ${authRepository.getEmail()}"
             )
+
+
+            GoogleMap(
+                cameraPositionState = cameraPositionState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Marker(
+                    state = markerState,
+                )
+            }
 
             Text(
                 text = "IMAGINE A MAP HERE"
