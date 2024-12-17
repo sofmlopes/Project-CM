@@ -24,10 +24,8 @@ object RepositoryProvider {
         AuthenticationService()
     }
 
-    private var databaseReference: FirebaseDatabase = FirebaseDatabase.getInstance()
-
     val databaseRepository: DatabaseService by lazy {
-        DatabaseService(databaseReference)
+        DatabaseService()
     }
 
 }

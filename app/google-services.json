@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "741888869187",
+    "firebase_url": "https://walking-undead-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "walking-undead",
     "storage_bucket": "walking-undead.firebasestorage.app"
   },

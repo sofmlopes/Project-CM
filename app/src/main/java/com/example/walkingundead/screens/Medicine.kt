@@ -38,11 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.navigation.Screens
+import com.example.walkingundead.provider.RepositoryProvider
 
 @Composable
 fun Medicine() {
-    val scrollState = rememberScrollState()
+    val database = remember { RepositoryProvider.databaseRepository }
 
+    val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -98,6 +100,19 @@ fun Medicine() {
             }
 
             Spacer(Modifier.height(5.dp))
+
+
+            Button(
+                onClick = {
+                    val name = "vicodin"
+                    val type = "opioid"
+                    val quantity = 5
+
+                    database.addNewMedicineEntry(name, type, quantity)
+                }
+            ) {
+                Text("Register new")
+            }
 
             // Medicine List (List of medicines)
             Column(
