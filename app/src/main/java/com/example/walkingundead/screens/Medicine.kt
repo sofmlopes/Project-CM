@@ -2,7 +2,9 @@ package com.example.walkingundead.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
@@ -18,63 +20,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.walkingundead.navigation.Screens
 
 @Composable
 fun Medicine() {
+    val scrollState = rememberScrollState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF3F3F3))
-            .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 80.dp)
+            .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 100.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(bottom = 20.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Section (Search bar and Icons)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Search Bar
-                TextField(
-                    value = "",
-                    onValueChange = { /* Handle Search */ },
-                    placeholder = { Text("Search Medicines", color = Color.Gray) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(Color.White, RoundedCornerShape(8.dp)),
-                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black)
-                )
+            // Search Bar
+            TextField(
+                value = "",
+                onValueChange = { /* Handle Search */ },
+                placeholder = { Text("Search Medicines", color = Color.Gray) },
+                modifier = Modifier
+                    .background(Color.White, RoundedCornerShape(8.dp))
+                    .fillMaxWidth(),
+                textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black)
+            )
 
-                /*
-                // New Button (camera icon)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { /* TO DO */ }) {
-                        Icon(
-                            Icons.Default.AccountBox,
-                            contentDescription = "New",
-                            tint = Color(0xFF6A4C9C) // Custom purple color for icon
-                        )
-                    }
-                    Text(
-                        text = "New",
-                        modifier = Modifier.padding(start = 4.dp),
-                        color = Color(0xFF6A4C9C),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                */
+            Spacer(Modifier.height(5.dp))
 
-            }
-
-
+            //Sort and Filter
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
@@ -101,43 +80,31 @@ fun Medicine() {
                 }
             }
 
-            /*
-            // Sort and Filter Buttons (Icons)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(onClick = { /* TODO */ }) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Sort",
-                        tint = Color(0xFF6A4C9C) // Custom purple color for icon
-                    )
-                }
-                IconButton(onClick = { /* TODO */ }) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Sort",
-                        tint = Color(0xFF6A4C9C) // Custom purple color for icon
-                    )
-                }
-                Text("Sort")
-                IconButton(onClick = { /* TO DO */ }) {
-                    Icon(
-                        Icons.Default.Build,
-                        contentDescription = "Filter",
-                        tint = Color(0xFF6A4C9C) // Custom purple color for icon
-                    )
-                }
-                Text("Filter")
-            }
-            */
+            Spacer(Modifier.height(5.dp))
 
             // Medicine List (List of medicines)
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.LightGray, RoundedCornerShape(8.dp))
+                    .padding(all = 10.dp)
+            ) {
+                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
+                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
+                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
+                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
+                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
+                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
+                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
+                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
+                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
+                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
+                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
+                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
+                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
+                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
+                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
+                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
                 MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
                 MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
                 MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
@@ -152,68 +119,46 @@ fun MedicineItem(name: String, category: String, count: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp)
-            .background(Color.White, RoundedCornerShape(12.dp)),
+            .padding(vertical = 5.dp) //5dp = vertical space between cards
+            .background(Color.White, RoundedCornerShape(8.dp)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        //Name and Category
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 10.dp, vertical = 20.dp)
+        ) {
             Text(
                 text = name,
                 fontWeight = FontWeight.Bold,
-                style = androidx.compose.ui.text.TextStyle(color = Color.Black)
+                style = TextStyle(color = Color.Black)
             )
             Text(
                 text = category,
-                style = androidx.compose.ui.text.TextStyle(color = Color.Gray)
+                style = TextStyle(color = Color.Gray)
             )
         }
 
+        //Quantity and Edit Button
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Decrease Button
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                IconButton(onClick = { /* TO DO */ }) {
-                    Icon(
-                        Icons.Default.Clear,
-                        contentDescription = "Decrease",
-                        tint = Color(0xFF6A4C9C)
-                    )
-                }
-                Text(
-                    text = "Decrease",
-                    modifier = Modifier.padding(start = 4.dp),
-                    color = Color(0xFF6A4C9C),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
             Text(
-                text = "$count",
+                text = "Quantity: $count",
                 modifier = Modifier.padding(horizontal = 8.dp),
                 fontWeight = FontWeight.Bold,
-                style = androidx.compose.ui.text.TextStyle(color = Color(0xFF6A4C9C))
+                style = TextStyle(color = Color.Black)
             )
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            Button(
+                modifier = Modifier
+                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                shape = RoundedCornerShape(6.dp),
+                onClick = { }
             ) {
-                IconButton(onClick = { /* TO DO */ }) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Increase",
-                        tint = Color(0xFF6A4C9C)
-                    )
-                }
-                Text(
-                    text = "Increase",
-                    modifier = Modifier.padding(start = 4.dp),
-                    color = Color(0xFF6A4C9C),
-                    fontWeight = FontWeight.Bold
-                )
+                Text("Edit Quantity")
             }
         }
     }
