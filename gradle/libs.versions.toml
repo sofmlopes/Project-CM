@@ -35,6 +35,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+androidx-material-icons-extended = {  group = "androidx.compose.material", name = "material-icons-extended"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

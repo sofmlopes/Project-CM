@@ -8,10 +8,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FoodBank
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.ThumbUp
+//import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -69,10 +75,12 @@ fun CustomScaffold(
                 Spacer(modifier = Modifier.weight(1f))
 
                 val icons = listOf(
-                    Screens.Authentication to Icons.Default.Home,
-                    Screens.Menu to Icons.Default.LocationOn,
-                    Screens.Medicine to Icons.Default.ShoppingCart,
-                    Screens.Food to Icons.Default.ThumbUp
+                    Screens.Authentication to Icons.Default.Person,
+                    Screens.Menu to Icons.Default.Menu,
+                    Screens.Medicine to Icons.Default.MedicalServices,
+                    Screens.Food to Icons.Default.FoodBank,
+                    Screens.Shelter to Icons.Default.Home,
+                    Screens.Profiles to Icons.Default.Groups
                 )
 
                 icons.forEach { (screen, icon) ->

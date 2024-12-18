@@ -79,5 +79,8 @@ dependencies {
     //Google Maps
     implementation (libs.play.services.maps)
     implementation (libs.maps.compose)
+
+    implementation(libs.androidx.material.icons.extended)
+
 }
 
