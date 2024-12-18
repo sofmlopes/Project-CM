@@ -71,12 +71,13 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-database")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.database)
 
     //Google Maps
-    implementation ("com.google.android.gms:play-services-maps:19.0.0")
-    implementation ("com.google.maps.android:maps-compose:2.9.0")
+    implementation (libs.play.services.maps)
+    implementation (libs.maps.compose)
 }
+

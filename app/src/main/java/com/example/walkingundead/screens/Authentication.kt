@@ -103,7 +103,7 @@ fun Authentication() {
                 Button(
                     shape = RoundedCornerShape(6.dp),
                     onClick = {
-                        navController.navigate(Screens.Map.route)
+                        navController.navigate(Screens.Menu.route)
                     }
                 ) {
                     Text("Go to Map")
@@ -148,7 +148,7 @@ fun Authentication() {
 
                                     if (authRepository.isAuthenticated()) {
                                         authenticated = true
-                                        navController.navigate(Screens.Map.route)
+                                        navController.navigate(Screens.Menu.route)
                                     } else {
                                         authenticated = false
                                     }

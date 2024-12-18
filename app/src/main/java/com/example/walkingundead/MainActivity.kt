@@ -56,7 +56,7 @@ fun CustomScaffold(
 ) {
     val navController = remember { RepositoryProvider.navController }
     val currentRoute = navController.currentBackStackEntry?.destination?.route
-    val selectedItem = remember { mutableStateOf(currentRoute ?: Screens.Map.route) }
+    val selectedItem = remember { mutableStateOf(currentRoute ?: Screens.Menu.route) }
 
     Scaffold(
         modifier = modifier,
@@ -70,7 +70,7 @@ fun CustomScaffold(
 
                 val icons = listOf(
                     Screens.Authentication to Icons.Default.Home,
-                    Screens.Map to Icons.Default.LocationOn,
+                    Screens.Menu to Icons.Default.LocationOn,
                     Screens.Medicine to Icons.Default.ShoppingCart,
                     Screens.Food to Icons.Default.ThumbUp
                 )

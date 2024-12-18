@@ -22,7 +22,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-fun Map() {
+fun Menu() {
 
     val authRepository = remember { RepositoryProvider.authRepository }
     val navController = remember { RepositoryProvider.navController }
