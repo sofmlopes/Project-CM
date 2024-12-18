@@ -21,6 +21,9 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -46,7 +49,9 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun Medicine() {
-    val database = remember { RepositoryProvider.databaseRepository }
+    val database = RepositoryProvider.databaseRepository
+
+    var isDialogVisible by remember { mutableStateOf(false) }
 
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
 
@@ -55,6 +60,13 @@ fun Medicine() {
             medicines = fetchedMedicines
         }
     }
+
+    //Variables to add new entry
+    var name by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var quantity by remember { mutableIntStateOf(0) }
+    var textValue by remember { mutableStateOf("") }
 
     val scrollState = rememberScrollState()
     Box(
@@ -79,7 +91,7 @@ fun Medicine() {
                 modifier = Modifier
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .fillMaxWidth(),
-                textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black)
+                textStyle = TextStyle(color = Color.Black)
             )
 
             Spacer(Modifier.height(5.dp))
@@ -91,6 +103,9 @@ fun Medicine() {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Button(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp, vertical = 10.dp),
+                    shape = RoundedCornerShape(6.dp),
                     onClick = { }
                 ) {
                     Icon(
@@ -101,6 +116,9 @@ fun Medicine() {
                 }
 
                 Button(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp, vertical = 10.dp),
+                    shape = RoundedCornerShape(6.dp),
                     onClick = { }
                 ) {
                     Icon(
@@ -113,19 +131,25 @@ fun Medicine() {
 
             Spacer(Modifier.height(5.dp))
 
-
-            Button(
-                onClick = {
-                    val name = "vicodin"
-                    val type = "opioid"
-                    val location = "2,4"
-                    val quantity = 5
-
-                    database.addNewMedicineEntry(name, type, location, quantity)
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Text("Register new")
+                Button(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp, vertical = 10.dp),
+                    shape = RoundedCornerShape(6.dp),
+                    onClick = {
+                        isDialogVisible = true
+
+                        database.addNewMedicineEntry(name, type, location, quantity)
+                    }
+                ) {
+                    Text("Register new")
+                }
             }
+
+            Spacer(Modifier.height(5.dp))
 
             // Medicine List (List of medicines)
             Column(
@@ -141,6 +165,100 @@ fun Medicine() {
                         MedicineItem(
                             medicine
                         )
+                    }
+                }
+            }
+        }
+
+        if (isDialogVisible) {
+            Dialog(
+                onDismissRequest = {
+                    isDialogVisible = false
+                }
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.White
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("Register Medicine", style = MaterialTheme.typography.titleLarge)
+
+                        TextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text("Name") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        TextField(
+                            value = type,
+                            onValueChange = { type = it },
+                            label = { Text("Type") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        TextField(
+                            value = location,
+                            onValueChange = { location = it },
+                            label = { Text("Location") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        TextField(
+                            value = "$quantity",
+                            onValueChange = { input ->
+                                val number = input.toIntOrNull()
+                                if (number != null && number >= 0) {
+                                    textValue = number.toString()
+                                } else if (input.isEmpty()) {
+                                    textValue = ""
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .width(100.dp),
+                            singleLine = true
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Button(
+                                onClick = {
+                                    // Save the medicine to the database
+                                    val quantityInt = quantity
+                                    database.addNewMedicineEntry(name, type, location, quantityInt)
+                                    isDialogVisible = false
+
+                                    // Reset fields
+                                    name = ""
+                                    type = ""
+                                    location = ""
+                                    quantity = 0
+                                }
+                            ) {
+                                Text("Save")
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            OutlinedButton(
+                                onClick = {
+                                    isDialogVisible = false
+                                }
+                            ) {
+                                Text("Cancel")
+                            }
+                        }
                     }
                 }
             }
@@ -283,6 +401,9 @@ fun MedicineItem(medicine: MedicineEntry) {
 
                         if (tempValue != 0) {
                             Button(
+                                modifier = Modifier
+                                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                                shape = RoundedCornerShape(6.dp),
                                 onClick = {
                                     isDialogVisible = false
                                     quantity = tempValue
@@ -294,6 +415,9 @@ fun MedicineItem(medicine: MedicineEntry) {
                             }
                         } else {
                             Button(
+                                modifier = Modifier
+                                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                                shape = RoundedCornerShape(6.dp),
                                 onClick = {
                                     isDialogVisible = false
                                     medicine.id?.let { id ->
