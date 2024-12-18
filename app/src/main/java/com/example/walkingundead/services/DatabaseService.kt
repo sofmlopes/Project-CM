@@ -2,7 +2,10 @@ package com.example.walkingundead.services
 
 import android.util.Log
 import com.example.walkingundead.models.MedicineEntry
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class DatabaseService {
 
@@ -25,27 +28,27 @@ class DatabaseService {
             }
     }
 
-    fun getAllMedicines(onComplete: (List<MedicineEntry>) -> Unit) {
+    fun getAllMedicines(listener: (List<MedicineEntry>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("medicine")
 
-        dbReference.get()
-            .addOnSuccessListener { snapshot ->
-                val medicines = snapshot.children.mapNotNull { child ->
-                    val medicineEntry = child.getValue(MedicineEntry::class.java)
-                    val id = child.key // Get the unique ID
-                    if (medicineEntry != null && id != null) {
-                        medicineEntry.id = id // Assign the ID to the model
-                        medicineEntry // Add the updated object to the list
-                    } else {
-                        null // Skip invalid data
+        dbReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val medicines = mutableListOf<MedicineEntry>()
+                for (data in snapshot.children) {
+                    val medicine = data.getValue(MedicineEntry::class.java)
+                    val id = data.key
+                    if (medicine != null && id != null) {
+                        medicine.id = id
+                        medicines.add(medicine)
                     }
                 }
-                onComplete(medicines) // Pass the list to the callback
+                listener(medicines)  // Send the updated list to the listener
             }
-            .addOnFailureListener { exception ->
-                Log.e("FirebaseFetch", "Failed to fetch medicines", exception)
-                onComplete(emptyList()) // Pass an empty list on failure
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching medicines", error.toException())
             }
+        })
     }
 
     fun editMedicineEntry(id: String, updatedEntry: MedicineEntry) {

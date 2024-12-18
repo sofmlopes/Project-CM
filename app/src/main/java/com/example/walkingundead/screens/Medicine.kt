@@ -51,11 +51,8 @@ fun Medicine() {
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        while (true) {
-            database.getAllMedicines { fetchedMedicines ->
-                medicines = fetchedMedicines
-            }
-            delay(5000)
+        database.getAllMedicines { fetchedMedicines ->
+            medicines = fetchedMedicines
         }
     }
 
