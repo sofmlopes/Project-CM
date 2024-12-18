@@ -211,11 +211,12 @@ fun Medicine() {
                         )
 
                         TextField(
-                            value = "$quantity",
+                            value = textValue,
                             onValueChange = { input ->
                                 val number = input.toIntOrNull()
                                 if (number != null && number >= 0) {
-                                    textValue = number.toString()
+                                    quantity = number
+                                    textValue = "$number"
                                 } else if (input.isEmpty()) {
                                     textValue = ""
                                 }
