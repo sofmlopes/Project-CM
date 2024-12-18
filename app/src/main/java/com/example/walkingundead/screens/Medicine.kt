@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,12 +38,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
 
 @Composable
 fun Medicine() {
     val database = remember { RepositoryProvider.databaseRepository }
+
+    // State to hold the list of medicines
+    var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
+
+    // Fetch medicines from the database
+    LaunchedEffect(Unit) {
+        database.getAllMedicines { fetchedMedicines ->
+            medicines = fetchedMedicines
+        }
+    }
 
     val scrollState = rememberScrollState()
     Box(
@@ -106,9 +118,10 @@ fun Medicine() {
                 onClick = {
                     val name = "vicodin"
                     val type = "opioid"
+                    val location = "2,4"
                     val quantity = 5
 
-                    database.addNewMedicineEntry(name, type, quantity)
+                    database.addNewMedicineEntry(name, type, location, quantity)
                 }
             ) {
                 Text("Register new")
@@ -121,26 +134,17 @@ fun Medicine() {
                     .background(Color.LightGray, RoundedCornerShape(8.dp))
                     .padding(all = 10.dp)
             ) {
-                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
-                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
-                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
-                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
-                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
-                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
-                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
-                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
-                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
-                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
-                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
-                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
-                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
-                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
-                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
-                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
-                MedicineItem(name = "Dipirona", category = "Analgesic", count = 3)
-                MedicineItem(name = "Paracetamol", category = "Analgesic", count = 2)
-                MedicineItem(name = "Aspirina", category = "Analgesic", count = 2)
-                MedicineItem(name = "Ibuprofeno", category = "Analgesic", count = 1)
+                if (medicines.isEmpty()) {
+                    Text("No medicines available", color = Color.Gray)
+                } else {
+                    medicines.forEach { medicine ->
+                        MedicineItem(
+                            name = medicine.name?:"",
+                            category = medicine.type?:"",
+                            count = medicine.quantity
+                        )
+                    }
+                }
             }
         }
     }

@@ -6,8 +6,8 @@ import com.google.firebase.database.FirebaseDatabase
 
 class DatabaseService {
 
-    fun addNewMedicineEntry(name: String, type: String, quantity: Int) {
-        val medicineEntry = MedicineEntry(name, type, quantity)
+    fun addNewMedicineEntry(name: String, type: String, location: String, quantity: Int) {
+        val medicineEntry = MedicineEntry(name, type, location, quantity)
 
         val dbReference = FirebaseDatabase.getInstance().reference.child("medicine")
 
@@ -20,8 +20,26 @@ class DatabaseService {
             }
     }
 
-    fun getAllMedicines() {
+    fun getAllMedicines(callback: (List<MedicineEntry>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("medicine")
 
+        dbReference.get()
+            .addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val medicines = mutableListOf<MedicineEntry>()
+                    for (snapshot in dataSnapshot.children) {
+                        val medicineEntry = snapshot.getValue(MedicineEntry::class.java)
+                        medicineEntry?.let { medicines.add(it) }
+                    }
+                    callback(medicines) // Pass the medicines list to the callback
+                } else {
+                    callback(emptyList()) // Pass an empty list if no medicines are found
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseFetch", "Failed to fetch medicines from database", exception)
+                callback(emptyList()) // Return an empty list on failure
+            }
     }
 
     fun editMedicineEntry() {
