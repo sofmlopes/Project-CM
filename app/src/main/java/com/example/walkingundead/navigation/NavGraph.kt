@@ -24,7 +24,7 @@ import androidx.navigation.compose.composable
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.screens.Authentication
 import com.example.walkingundead.screens.Food
-import com.example.walkingundead.screens.Map
+import com.example.walkingundead.screens.Menu
 import com.example.walkingundead.screens.Medicine
 
 @Composable
@@ -39,8 +39,8 @@ fun NavGraph(navController: NavHostController) {
             Authentication()
         }
 
-        composable(route = Screens.Map.route) {
-            Map()
+        composable(route = Screens.Menu.route) {
+            Menu()
         }
 
         composable(route = Screens.Medicine.route) {
