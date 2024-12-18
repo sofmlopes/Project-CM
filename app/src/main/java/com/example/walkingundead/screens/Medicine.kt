@@ -1,5 +1,6 @@
 package com.example.walkingundead.screens
 
+import android.util.Log
 import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -41,18 +42,20 @@ import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import kotlinx.coroutines.delay
 
 @Composable
 fun Medicine() {
     val database = remember { RepositoryProvider.databaseRepository }
 
-    // State to hold the list of medicines
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
 
-    // Fetch medicines from the database
     LaunchedEffect(Unit) {
-        database.getAllMedicines { fetchedMedicines ->
-            medicines = fetchedMedicines
+        while (true) {
+            database.getAllMedicines { fetchedMedicines ->
+                medicines = fetchedMedicines
+            }
+            delay(5000)
         }
     }
 
@@ -139,9 +142,7 @@ fun Medicine() {
                 } else {
                     medicines.forEach { medicine ->
                         MedicineItem(
-                            name = medicine.name?:"",
-                            category = medicine.type?:"",
-                            count = medicine.quantity
+                            medicine
                         )
                     }
                 }
@@ -151,9 +152,12 @@ fun Medicine() {
 }
 
 @Composable
-fun MedicineItem(name: String, category: String, count: Int) {
+fun MedicineItem(medicine: MedicineEntry) {
+
+    val database = remember { RepositoryProvider.databaseRepository }
+
     var isDialogVisible by remember { mutableStateOf(false) }
-    var quantity by remember { mutableIntStateOf(count) }
+    var quantity by remember { mutableIntStateOf(medicine.quantity) }
     var textValue by remember { mutableStateOf(quantity.toString()) }
     var tempValue by remember { mutableIntStateOf(quantity) } //used so changes are not immediately applied to quantity
 
@@ -172,12 +176,12 @@ fun MedicineItem(name: String, category: String, count: Int) {
                 .padding(horizontal = 10.dp, vertical = 20.dp)
         ) {
             Text(
-                text = name,
+                text = medicine.name?:"",
                 fontWeight = FontWeight.Bold,
                 style = TextStyle(color = Color.Black)
             )
             Text(
-                text = category,
+                text = medicine.type?:"",
                 style = TextStyle(color = Color.Gray)
             )
         }
@@ -285,6 +289,8 @@ fun MedicineItem(name: String, category: String, count: Int) {
                                 onClick = {
                                     isDialogVisible = false
                                     quantity = tempValue
+                                    val updatedEntry = medicine.copy(quantity = quantity)
+                                    database.editMedicineEntry(medicine.id!!, updatedEntry) //hopefully it crashes if it has no ID cuz it should always have an ID
                                 }
                             ) {
                                 Text("Apply")
@@ -293,7 +299,9 @@ fun MedicineItem(name: String, category: String, count: Int) {
                             Button(
                                 onClick = {
                                     isDialogVisible = false
-                                    //TODO NEEDS TO REMOVE IT FROM FIREBASE SOMEHOW
+                                    medicine.id?.let { id ->
+                                        database.deleteMedicineEntry(id)
+                                    } ?: Log.e("DeleteError", "Cannot delete entry with no ID")
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.Red
