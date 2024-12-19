@@ -26,6 +26,8 @@ import com.example.walkingundead.screens.Authentication
 import com.example.walkingundead.screens.Food
 import com.example.walkingundead.screens.Menu
 import com.example.walkingundead.screens.Medicine
+import com.example.walkingundead.screens.Profiles
+import com.example.walkingundead.screens.Shelter
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -49,6 +51,14 @@ fun NavGraph(navController: NavHostController) {
 
         composable(route = Screens.Food.route) {
             Food()
+        }
+
+        composable(route = Screens.Shelter.route) {
+            Shelter()
+        }
+
+        composable(route = Screens.Profiles.route) {
+            Profiles()
         }
     }
 }
