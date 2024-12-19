@@ -87,7 +87,7 @@ fun Medicine() {
             TextField(
                 value = "",
                 onValueChange = { /* Handle Search */ },
-                placeholder = { Text("Search Medicines", color = Color.Gray) },
+                placeholder = { Text("Search Medicines", color = Color.DarkGray) },
                 modifier = Modifier
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .fillMaxWidth(),
@@ -154,7 +154,7 @@ fun Medicine() {
                     .padding(all = 10.dp)
             ) {
                 if (medicines.isEmpty()) {
-                    Text("No medicines available", color = Color.Gray)
+                    Text("No medicines available", color = Color.DarkGray)
                 } else {
                     medicines.forEach { medicine ->
                         MedicineItem(
@@ -293,7 +293,11 @@ fun MedicineItem(medicine: MedicineEntry) {
             )
             Text(
                 text = medicine.type?:"",
-                style = TextStyle(color = Color.Gray)
+                style = TextStyle(color = Color.DarkGray)
+            )
+            Text(
+                text = medicine.location?:"",
+                style = TextStyle(color = Color.DarkGray)
             )
         }
 
@@ -318,7 +322,7 @@ fun MedicineItem(medicine: MedicineEntry) {
                     textValue = "$quantity" // Makes sure the pop up shows the current value
                 }
             ) {
-                Text("Edit Quantity")
+                Text("Edit")
             }
         }
 
