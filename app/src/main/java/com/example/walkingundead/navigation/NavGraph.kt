@@ -28,6 +28,7 @@ import com.example.walkingundead.screens.Menu
 import com.example.walkingundead.screens.Medicine
 import com.example.walkingundead.screens.Profiles
 import com.example.walkingundead.screens.Shelter
+import com.example.walkingundead.screens.SkillsPickerScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -39,6 +40,10 @@ fun NavGraph(navController: NavHostController) {
     {
         composable(route = Screens.Authentication.route) {
             Authentication()
+        }
+
+        composable(route = Screens.Skills.route) {
+            SkillsPickerScreen()
         }
 
         composable(route = Screens.Menu.route) {
