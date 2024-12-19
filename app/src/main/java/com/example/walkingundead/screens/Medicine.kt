@@ -129,10 +129,9 @@ fun Medicine() {
                 }
             }
 
-            Spacer(Modifier.height(5.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
@@ -141,15 +140,11 @@ fun Medicine() {
                     shape = RoundedCornerShape(6.dp),
                     onClick = {
                         isDialogVisible = true
-
-                        database.addNewMedicineEntry(name, type, location, quantity)
                     }
                 ) {
                     Text("Register new")
                 }
             }
-
-            Spacer(Modifier.height(5.dp))
 
             // Medicine List (List of medicines)
             Column(
