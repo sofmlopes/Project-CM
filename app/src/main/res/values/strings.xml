@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Walking UnDead</string>
     <string name="google_maps_api_key">AIzaSyDBbIK2b1LW1eEVWhM8pmsRgeycprexyYo</string>
+    <string name="register_new">Register new</string>
+    <string name="number_of_beds">Number of Beds</string>
+    <string name="number_of_occupied_beds">Number of Occupied Beds</string>
+    <string name="quantity">Quantity</string>
+    <string name="register_shelter">Register Shelter</string>
+    <string name="register_medicine">Register Medicine</string>
+    <string name="name">Name</string>
+    <string name="location">Location</string>
 </resources>

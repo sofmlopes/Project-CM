@@ -1,11 +1,15 @@
 package com.example.walkingundead.services
 
 import android.util.Log
+import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
+import com.example.walkingundead.models.Shelter
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.ktx.Firebase
 
 class DatabaseService {
 
@@ -15,6 +19,7 @@ class DatabaseService {
             type = type,
             location = location,
             quantity = quantity,
+            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
         )
 
         val dbReference = FirebaseDatabase.getInstance().reference.child("medicine")
@@ -73,5 +78,48 @@ class DatabaseService {
             .addOnFailureListener { exception ->
                 Log.e("FirebaseDelete", "Failed to delete medicine entry with ID: $id", exception)
             }
+    }
+
+    fun addNewShelter(name: String, location: String, nrOfBeds: Int, occupiedBeds: Int) {
+        val shelter = Shelter(
+            name = name,
+            location = location,
+            numberOfBeds = nrOfBeds,
+            occupiedBeds = occupiedBeds,
+            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
+        )
+
+        val dbReference = FirebaseDatabase.getInstance().reference.child("shelter")
+
+        dbReference.push().setValue(shelter)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpload", "Added shelter entry to database")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpload", "Failed to add shelter entry to database", exception)
+            }
+    }
+
+    fun getAllShelters(listener: (List<Shelter>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("shelter")
+
+        dbReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val shelters = mutableListOf<Shelter>()
+                for (data in snapshot.children) {
+                    val shelter = data.getValue(Shelter::class.java)
+                    val id = data.key
+                    if (shelter != null && id != null) {
+                        shelter.id = id
+                        shelters.add(shelter)
+                    }
+                }
+                listener(shelters)  // Send the updated list to the listener
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching medicines", error.toException())
+            }
+        })
     }
 }

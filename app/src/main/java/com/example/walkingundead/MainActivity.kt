@@ -4,8 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FoodBank
@@ -21,12 +27,17 @@ import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.walkingundead.navigation.NavGraph
@@ -75,27 +86,49 @@ fun CustomScaffold(
                 Spacer(modifier = Modifier.weight(1f))
 
                 val icons = listOf(
-                    Screens.Authentication to Icons.Default.Person,
-                    Screens.Menu to Icons.Default.Menu,
-                    Screens.Medicine to Icons.Default.MedicalServices,
-                    Screens.Food to Icons.Default.FoodBank,
-                    Screens.Shelter to Icons.Default.Home,
-                    Screens.Profiles to Icons.Default.Groups
+                    Screens.Menu to "Menu" to Icons.Default.Menu,
+                    Screens.Medicine to "Medicine" to Icons.Default.MedicalServices,
+                    Screens.Food to "Food" to Icons.Default.FoodBank,
+                    Screens.Shelter to "Shelter" to Icons.Default.Home,
+                    Screens.Profiles to "Profiles" to Icons.Default.Groups
                 )
 
-                icons.forEach { (screen, icon) ->
-                    IconButton(onClick = {
-                        selectedItem.value = screen.route
-                        navController.navigate(screen.route) {
-                            popUpTo(screen.route) { inclusive = false }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    icons.forEach { (pair, icon) ->
+                        val (screen, label) = pair
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    selectedItem.value = screen.route
+                                    navController.navigate(screen.route) {
+                                        popUpTo(screen.route) { inclusive = false }
+                                    }
+                                }
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                modifier = Modifier.size(26.dp),
+                                tint = if (selectedItem.value == screen.route) Color.White else Color.Gray
+                            )
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (selectedItem.value == screen.route) Color.White else Color.Gray,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Center
+                            )
                         }
-                    }) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = screen.route,
-                            modifier = Modifier.size(26.dp),
-                            tint = if (selectedItem.value == screen.route) Color.White else Color.Gray
-                        )
                     }
                 }
 

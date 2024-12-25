@@ -1,6 +1,5 @@
 package com.example.walkingundead.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,45 +11,64 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.walkingundead.R
+import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Shelter
+import com.example.walkingundead.provider.RepositoryProvider
 
 @Composable
 fun Shelter() {
+    val database = RepositoryProvider.databaseRepository
+
     var isDialogVisible by remember { mutableStateOf(false) }
 
+    var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        database.getAllShelters { fetchedShelters ->
+            shelterList = fetchedShelters
+        }
+    }
+
+    //Variables to add new entry
+    var name by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var numberOfBeds by remember { mutableIntStateOf(0) }
+    var occupiedBeds by remember { mutableIntStateOf(0) }
+    var textValueNrBeds by remember { mutableStateOf("") }
+    var textValueOccupiedBeds by remember { mutableStateOf("") }
+
+    /*
     val shelterList = listOf(
         Shelter(
             name = "Abandoned Warehouse",
@@ -71,6 +89,7 @@ fun Shelter() {
             occupiedBeds = 1,
         )
     )
+    */
 
     val scrollState = rememberScrollState()
     Box(
@@ -146,7 +165,7 @@ fun Shelter() {
                         isDialogVisible = true
                     }
                 ) {
-                    Text("Register new")
+                    Text(stringResource(R.string.register_new))
                 }
             }
 
@@ -171,6 +190,7 @@ fun Shelter() {
 
         }
 
+        //Register new pop up
         if (isDialogVisible) {
             Dialog(
                 onDismissRequest = {
@@ -188,51 +208,57 @@ fun Shelter() {
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Register Medicine", style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(R.string.register_shelter), style = MaterialTheme.typography.titleLarge)
 
-                        /*
                         TextField(
                             value = name,
                             onValueChange = { name = it },
-                            label = { Text("Name") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        TextField(
-                            value = type,
-                            onValueChange = { type = it },
-                            label = { Text("Type") },
+                            label = { Text(stringResource(R.string.name)) },
                             modifier = Modifier.fillMaxWidth()
                         )
 
                         TextField(
                             value = location,
                             onValueChange = { location = it },
-                            label = { Text("Location") },
+                            label = { Text(stringResource(R.string.location)) },
                             modifier = Modifier.fillMaxWidth()
                         )
 
                         TextField(
-                            value = textValue,
+                            value = textValueNrBeds,
                             onValueChange = { input ->
                                 val number = input.toIntOrNull()
                                 if (number != null && number >= 0) {
-                                    quantity = number
-                                    textValue = "$number"
+                                    numberOfBeds = number
+                                    textValueNrBeds = "$number"
                                 } else if (input.isEmpty()) {
-                                    textValue = ""
+                                    textValueNrBeds = ""
                                 }
                             },
+                            label = { Text(stringResource(R.string.number_of_beds)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier
-                                .width(100.dp),
-                            singleLine = true
+                            singleLine = true,
                         )
-                        */
+
+                        TextField(
+                            value = textValueOccupiedBeds,
+                            onValueChange = { input ->
+                                val number = input.toIntOrNull()
+                                if (number != null && number >= 0) {
+                                    occupiedBeds = number
+                                    textValueOccupiedBeds = "$number"
+                                } else if (input.isEmpty()) {
+                                    textValueNrBeds = ""
+                                }
+                            },
+                            label = { Text(stringResource(R.string.number_of_occupied_beds)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                        )
+
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        /*
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
@@ -240,15 +266,16 @@ fun Shelter() {
                             Button(
                                 onClick = {
                                     // Save the medicine to the database
-                                    val quantityInt = quantity
-                                    database.addNewMedicineEntry(name, type, location, quantityInt)
+                                    val nrOfBedsSave = numberOfBeds
+                                    val occupiedBedsSave = occupiedBeds
+                                    database.addNewShelter(name, location, nrOfBedsSave, occupiedBedsSave)
                                     isDialogVisible = false
 
                                     // Reset fields
                                     name = ""
-                                    type = ""
                                     location = ""
-                                    quantity = 0
+                                    numberOfBeds = 0
+                                    occupiedBeds = 0
                                 }
                             ) {
                                 Text("Save")
@@ -264,7 +291,6 @@ fun Shelter() {
                                 Text("Cancel")
                             }
                         }
-                        */
                     }
                 }
             }

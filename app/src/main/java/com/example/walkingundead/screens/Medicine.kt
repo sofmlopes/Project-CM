@@ -36,12 +36,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
@@ -69,6 +71,7 @@ fun Medicine() {
     var textValue by remember { mutableStateOf("") }
 
     val scrollState = rememberScrollState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -182,7 +185,7 @@ fun Medicine() {
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Register Medicine", style = MaterialTheme.typography.titleLarge)
+                        Text(stringResource(R.string.register_medicine), style = MaterialTheme.typography.titleLarge)
 
                         TextField(
                             value = name,
@@ -216,10 +219,9 @@ fun Medicine() {
                                     textValue = ""
                                 }
                             },
+                            label = { Text(stringResource(R.string.quantity)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier
-                                .width(100.dp),
-                            singleLine = true
+                            singleLine = true,
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
