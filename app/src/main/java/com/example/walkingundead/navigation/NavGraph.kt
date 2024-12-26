@@ -35,13 +35,9 @@ fun NavGraph(navController: NavHostController) {
 
     NavHost(
         navController = navController,
-        startDestination = Screens.Authentication.route
+        startDestination = Screens.Menu.route
     )
     {
-        composable(route = Screens.Authentication.route) {
-            Authentication()
-        }
-
         composable(route = Screens.Skills.route) {
             SkillsPickerScreen()
         }

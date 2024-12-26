@@ -14,19 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.FoodBank
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.ThumbUp
-//import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,7 +37,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.walkingundead.navigation.NavGraph
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.screens.Authentication
 import com.example.walkingundead.ui.theme.WalkingUnDeadTheme
+import androidx.compose.material3.Icon
+import com.google.firebase.auth.ktx.auth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,14 +50,30 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WalkingUnDeadTheme {
+                val authRepository = remember { RepositoryProvider.authRepository }
                 val navController = rememberNavController()
                 RepositoryProvider.setNavController(navController)
 
-                CustomScaffold(
-                    content = {
-                        NavGraph(navController = navController)
-                    }
-                )
+                if (authRepository.isAuthenticated()) {
+                    CustomScaffold(
+                        content = {
+                            Column {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End,
+                                ) {
+                                    Icon(
+                                        Icons.Default.AccountCircle,
+                                        contentDescription = "Profile Icon"
+                                    )
+                                }
+                                NavGraph(navController = navController)
+                            }
+                        }
+                    )
+                } else {
+                    Authentication()
+                }
             }
         }
     }
@@ -76,7 +89,7 @@ fun CustomScaffold(
     val selectedItem = remember { mutableStateOf(currentRoute ?: Screens.Menu.route) }
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.padding(top = 20.dp),
         bottomBar = {
             BottomAppBar(
                 containerColor = Color.Black,

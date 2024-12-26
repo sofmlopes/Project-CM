@@ -47,12 +47,6 @@ fun Menu() {
             horizontalAlignment = Alignment.CenterHorizontally,
         )
         {
-
-            Text(
-                text = "Authenticated as ${authRepository.getEmail()}"
-            )
-
-
             GoogleMap(
                 cameraPositionState = cameraPositionState,
                 modifier = Modifier.fillMaxSize()
@@ -60,18 +54,6 @@ fun Menu() {
                 Marker(
                     state = markerState,
                 )
-            }
-
-            Text(
-                text = "IMAGINE A MAP HERE"
-            )
-
-            Button(
-                onClick = {
-                    navController.navigate(route = Screens.Authentication.route)
-                }
-            ) {
-                Text("back to authentication")
             }
         }
     }
