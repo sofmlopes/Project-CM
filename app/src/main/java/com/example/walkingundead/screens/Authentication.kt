@@ -14,15 +14,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,6 +50,10 @@ fun Authentication() {
 
     var authenticated by remember { mutableStateOf(authRepository.isAuthenticated()) }
 
+    // Skills-related state
+    val skillsList = remember { mutableStateListOf("Cooking", "Crafting", "Fighting", "Navigation") }
+    val selectedSkills = remember { mutableStateListOf<String>() }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -59,26 +66,43 @@ fun Authentication() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
-            WalkingUndeadLogo()
-
-            Spacer(Modifier.height(10.dp))
-
-            Box(
-                modifier = Modifier.padding(horizontal = 50.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.zombie),
-                    contentDescription = "Cute zombie",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Spacer(Modifier.height(10.dp))
-
             //If logged in just show email and option to logout
             if (authenticated) {
+
+                Image(
+                    painter = painterResource(id = R.drawable.default_user),
+                    contentDescription = "Profile Image",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(RoundedCornerShape(60.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(Modifier.height(15.dp))
+
                 Text("Authenticated as ${authRepository.getEmail()}")
+
+                Spacer(Modifier.height(25.dp))
+
+                // Display selected skills
+                Text(
+                    text = "Selected Skills: ${selectedSkills.joinToString(", ")}",
+                    style = TextStyle(fontSize = 16.sp)
+                )
+
+                Spacer(Modifier.height(15.dp))
+
+                // Button to open the skill picker screen
+                Button(
+                    shape = RoundedCornerShape(6.dp),
+                    onClick = {
+                        // Logic to navigate to SkillsPickerScreen if necessary
+                        // In case you're not navigating, you can make it a modal dialog or inline screen
+                        navController.navigate(Screens.Skills.route)
+                    }
+                ) {
+                    Text("Change Skills")
+                }
 
                 Spacer(Modifier.height(25.dp))
 
@@ -100,16 +124,26 @@ fun Authentication() {
                     Text("Log Out")
                 }
 
-                Button(
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = {
-                        navController.navigate(Screens.Menu.route)
-                    }
+            } else {
+
+                // Show login form when not authenticated
+                WalkingUndeadLogo()
+
+                Spacer(Modifier.height(10.dp))
+
+                Box(
+                    modifier = Modifier.padding(horizontal = 50.dp)
                 ) {
-                    Text("Go to Map")
+                    Image(
+                        painter = painterResource(id = R.drawable.zombie),
+                        contentDescription = "Cute zombie",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
 
-            } else {
+                Spacer(Modifier.height(10.dp))
+
                 TextField(
                     value = email,
                     onValueChange = { email = it },

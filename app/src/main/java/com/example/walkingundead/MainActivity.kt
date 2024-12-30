@@ -64,7 +64,14 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     Icon(
                                         Icons.Default.AccountCircle,
-                                        contentDescription = "Profile Icon"
+                                        contentDescription = "Profile Icon",
+                                        modifier = Modifier.size(36.dp).clickable {
+                                            // Navigate to the Authentication screen when clicked
+                                             navController.navigate(Screens.Authentication.route) {
+                                                 // Prevent the profile screen from being added multiple times in the backstack
+                                                    popUpTo(Screens.Menu.route) { inclusive = false }
+                                                }
+                                            }
                                     )
                                 }
                                 NavGraph(navController = navController)
