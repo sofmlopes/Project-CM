@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -47,6 +48,10 @@ import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import kotlinx.coroutines.delay
 
 @Composable
@@ -69,13 +74,14 @@ fun Medicine() {
     var location by remember { mutableStateOf("") }
     var quantity by remember { mutableIntStateOf(0) }
     var textValue by remember { mutableStateOf("") }
+    var isLocationDialogVisible by remember { mutableStateOf(false) }
+    var markerPosition by remember { mutableStateOf<LatLng?>(null) }
 
     val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF3F3F3))
             .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 100.dp)
     ) {
         Column(
@@ -207,6 +213,11 @@ fun Medicine() {
                             label = { Text("Location") },
                             modifier = Modifier.fillMaxWidth()
                         )
+                        Button(
+                            onClick = { isLocationDialogVisible = true }
+                        ) {
+                            Text("Choose Location")
+                        }
 
                         TextField(
                             value = textValue,
@@ -256,6 +267,63 @@ fun Medicine() {
                             ) {
                                 Text("Cancel")
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isLocationDialogVisible) {
+            Dialog(
+                onDismissRequest = {
+                    isLocationDialogVisible = false
+                } // Closes the map dialog
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.6f)
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        Text(
+                            "Select Location on Map",
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(8.dp),
+                            textAlign = TextAlign.Center
+                        )
+
+                        // Constrain the height of the GoogleMap
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f) // Ensures it takes available vertical space proportionally
+                        ) {
+                            GoogleMap(
+                                onMapClick = { latLng ->
+                                    Log.d("MapClick", "Location: ${latLng.latitude}, ${latLng.longitude}")
+                                    markerPosition = latLng // Update the marker position
+                                    location = "${latLng.latitude}, ${latLng.longitude}" // Save location
+                                }
+                            ) {
+                                // Add a marker if the user has tapped
+                                markerPosition?.let { position ->
+                                    Marker(
+                                        state = MarkerState(position = position),
+                                        title = "Selected Location",
+                                        snippet = "${position.latitude}, ${position.longitude}"
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = { isLocationDialogVisible = false }
+                        ) {
+                            Text("Confirm Location")
                         }
                     }
                 }

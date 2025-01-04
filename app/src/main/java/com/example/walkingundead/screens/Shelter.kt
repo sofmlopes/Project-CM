@@ -95,7 +95,6 @@ fun Shelter() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF3F3F3))
             .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 100.dp)
     ) {
         Column(
