@@ -1,6 +1,5 @@
 package com.example.walkingundead.screens
 
-import android.app.AlertDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,7 +34,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-fun Menu() {
+fun Menu(currentLocation: LatLng?) {
 
     val database = RepositoryProvider.databaseRepository
 
@@ -100,6 +98,15 @@ fun Menu() {
                             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
                         )
                     }
+                }
+                // Add current location marker
+                currentLocation?.let {
+                    Marker(
+                        state = rememberMarkerState(position = it),
+                        title = "You are here",
+                        snippet = "Current location",
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                    )
                 }
             }
         }

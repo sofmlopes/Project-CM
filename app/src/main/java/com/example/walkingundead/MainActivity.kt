@@ -1,5 +1,6 @@
 package com.example.walkingundead
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -41,12 +42,20 @@ import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.screens.Authentication
 import com.example.walkingundead.ui.theme.WalkingUnDeadTheme
 import androidx.compose.material3.Icon
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.ktx.auth
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         enableEdgeToEdge()
         setContent {
@@ -54,6 +63,12 @@ class MainActivity : ComponentActivity() {
                 val authRepository = remember { RepositoryProvider.authRepository }
                 val navController = rememberNavController()
                 RepositoryProvider.setNavController(navController)
+                val currentLocationState = remember { mutableStateOf<LatLng?>(null) }
+
+                // Fetch location and update state
+                fetchLocation { location ->
+                    currentLocationState.value = LatLng(location.latitude, location.longitude)
+                }
 
                 if (authRepository.isAuthenticated()) {
                     CustomScaffold(
@@ -75,7 +90,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                     )
                                 }
-                                NavGraph(navController = navController)
+                                NavGraph(navController = navController, currentLocation = currentLocationState.value)
                             }
                         }
                     )
@@ -83,6 +98,17 @@ class MainActivity : ComponentActivity() {
                     Authentication()
                 }
             }
+        }
+    }
+    private fun fetchLocation(onLocationReceived: (android.location.Location) -> Unit) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                onLocationReceived(location)
+            } else {
+                // Handle null location case
+            }
+        }.addOnFailureListener { e ->
+            // Handle failure case
         }
     }
 }
