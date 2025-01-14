@@ -1,5 +1,6 @@
 package com.example.walkingundead.screens
 
+import android.app.AlertDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
@@ -106,9 +110,26 @@ fun Menu() {
                 .background(MaterialTheme.colorScheme.primary),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            ElevatedButton(onClick = { onClick() }) {
+            // State to control the visibility of the "Report Zombie" dialog
+            val openReportDialog = remember { mutableStateOf(false) }
+
+            // The main menu UI
+            ElevatedButton(onClick = { openReportDialog.value = true }) {
                 Text("Report Zombie")
             }
+
+            // Show the dialog when openReportDialog is true
+            if (openReportDialog.value) {
+                ReportZombieDialog(
+                    onNo = { openReportDialog.value = false },
+                    onYes = {
+                        // Add your "Report Zombie" action logic here
+                        println("Zombies reported!")
+                        openReportDialog.value = false
+                    }
+                )
+            }
+
             ElevatedButton(onClick = { onClick() }) {
                 Text("SOS")
             }
@@ -121,6 +142,38 @@ fun Menu() {
 
 fun onClick() {
     TODO("Not yet implemented")
+}
+
+@Composable
+fun ReportZombieDialog(onNo: () -> Unit, onYes: () -> Unit,) {
+
+    Dialog(onDismissRequest = onNo) {
+
+        Text(
+            text = " Are you sure you want to \n" +
+                    "report Zombies in your current \n" +
+                    "location (3km range)?",
+            modifier = Modifier.padding(16.dp),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            TextButton(
+                onClick = { onNo() },
+                modifier = Modifier.padding(8.dp),
+            ) {
+                Text("No")
+            }
+            TextButton(
+                onClick = { onYes() },
+                modifier = Modifier.padding(8.dp),
+            ) {
+                Text("Yes")
+            }
+        }
+    }
 }
 
 // Helper function to parse location strings into LatLng objects
