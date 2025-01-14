@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -62,7 +63,7 @@ fun Authentication() {
         Column(
             modifier = Modifier
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
@@ -80,7 +81,16 @@ fun Authentication() {
 
                 Spacer(Modifier.height(15.dp))
 
-                Text("Authenticated as ${authRepository.getEmail()}")
+                val robotoFamily = FontFamily.Default
+
+                Text("Authenticated as ${authRepository.getEmail()}",
+                    style = TextStyle(
+                        fontFamily = robotoFamily, // Example font family (you can use custom fonts)
+                        fontWeight = FontWeight.Bold,  // Bold text
+                        fontSize = 20.sp,              // Font size
+                        letterSpacing = 1.5.sp,        // Letter spacing (spacing between characters)
+                        color = Color.Black           // Text color
+                    ))
 
                 Spacer(Modifier.height(25.dp))
 
