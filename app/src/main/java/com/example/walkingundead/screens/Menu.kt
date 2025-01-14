@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
@@ -68,7 +69,8 @@ fun Menu() {
                         Marker(
                             state = markerState,
                             title = "Medicine: ${medicine.name}",
-                            snippet = "Quantity: ${medicine.quantity}"
+                            snippet = "Quantity: ${medicine.quantity}",
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE),
                         )
                     }
                 }
@@ -81,7 +83,8 @@ fun Menu() {
                         Marker(
                             state = markerState,
                             title = "Shelter: ${shelter.name}",
-                            snippet = "Capacity: ${shelter.numberOfBeds}"
+                            snippet = "Capacity: ${shelter.numberOfBeds}",
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
                         )
                     }
                 }
