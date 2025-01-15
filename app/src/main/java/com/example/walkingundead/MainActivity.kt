@@ -1,7 +1,9 @@
 package com.example.walkingundead
 
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -42,10 +44,12 @@ import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.screens.Authentication
 import com.example.walkingundead.ui.theme.WalkingUnDeadTheme
 import androidx.compose.material3.Icon
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.ktx.auth
+import android.Manifest
 
 class MainActivity : ComponentActivity() {
 
@@ -66,7 +70,7 @@ class MainActivity : ComponentActivity() {
                 val currentLocationState = remember { mutableStateOf<LatLng?>(null) }
 
                 // Fetch location and update state
-                fetchLocation { location ->
+                fetchLocation(context = this) { location ->
                     currentLocationState.value = LatLng(location.latitude, location.longitude)
                 }
 
@@ -100,15 +104,33 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    private fun fetchLocation(onLocationReceived: (android.location.Location) -> Unit) {
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                onLocationReceived(location)
-            } else {
-                // Handle null location case
+
+    private fun fetchLocation(
+        context: Context,
+        onLocationReceived: (android.location.Location) -> Unit
+    ) {
+        val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
+        val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
+
+        // Check if permissions are granted
+        if (ContextCompat.checkSelfPermission(context, fineLocationPermission) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, coarseLocationPermission) == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Fetch location
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    onLocationReceived(location)
+                } else {
+                    // Handle null location case
+                    Log.e("fetchLocation", "Location is null")
+                }
+            }.addOnFailureListener { e ->
+                // Handle failure case
+                Log.e("fetchLocation", "Failed to fetch location: ${e.message}")
             }
-        }.addOnFailureListener { e ->
-            // Handle failure case
+        } else {
+            // Permissions are not granted
+            Log.e("fetchLocation", "Location permissions are not granted")
         }
     }
 }
