@@ -58,6 +58,11 @@ fun Menu(currentLocation: LatLng?) {
             shelterList = fetchedShelters
         }
     }
+    LaunchedEffect(Unit) {
+        database.getAllZombies { fetchedReports ->
+            zombieReports = fetchedReports
+        }
+    }
 
     val cameraPositionState = rememberCameraPositionState {
         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(38.736946, -9.142685), 10f)

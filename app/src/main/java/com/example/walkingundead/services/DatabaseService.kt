@@ -183,4 +183,28 @@ class DatabaseService {
                 Log.e("FirebaseUpload", "Failed to add report zombie to database", exception)
             }
     }
+
+    fun getAllZombies(listener: (List<ReportZombie>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Report Zombie")
+
+        dbReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val reportsZombies = mutableListOf<ReportZombie>()
+                for (data in snapshot.children) {
+                    val zombie = data.getValue(ReportZombie::class.java)
+                    val id = data.key
+                    if (zombie != null && id != null) {
+                        zombie.id = id
+                        reportsZombies.add(zombie)
+                    }
+                }
+                listener(reportsZombies)  // Send the updated list to the listener
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching zombies", error.toException())
+            }
+        })
+
+    }
 }
