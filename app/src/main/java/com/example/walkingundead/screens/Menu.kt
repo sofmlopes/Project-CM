@@ -1,5 +1,7 @@
 package com.example.walkingundead.screens
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -134,10 +137,14 @@ fun Menu(currentLocation: LatLng?) {
                     val location = parseLocation(report.location)
                     location?.let {
                         val markerState = rememberMarkerState(position = it)
+                        // Convert the image resource to Bitmap
+                        val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.zombie_marker)
+                        // Scale the bitmap to a fixed size
+                        val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
                         Marker(
                             state = markerState,
                             title = "Report Zombie",
-                            icon = BitmapDescriptorFactory.fromResource(R.drawable.zombie_marker)
+                            icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                         )
                     }
                 }
@@ -255,4 +262,9 @@ fun parseLocation(location: String?): LatLng? {
         e.printStackTrace()
         null
     }
+}
+
+// Function to scale the bitmap to a fixed size
+fun scaleBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap {
+    return Bitmap.createScaledBitmap(bitmap, width, height, false)
 }
