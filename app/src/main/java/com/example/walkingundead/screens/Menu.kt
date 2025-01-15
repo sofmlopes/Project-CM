@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
@@ -60,18 +63,20 @@ fun Menu(currentLocation: LatLng?) {
         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(38.736946, -9.142685), 10f)
     }
 
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(bottom = 100.dp), // Reserve space for the BottomBar
+        verticalArrangement = Arrangement.SpaceBetween, // Adjust space
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            //modifier = androidx.compose.ui.Modifier.fillMaxSize()
-            modifier = Modifier.weight(1f), // Ensures the map takes up available space
-            contentAlignment = Alignment.Center
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
         ) {
             GoogleMap(
                 cameraPositionState = cameraPositionState,
-                modifier = androidx.compose.ui.Modifier.fillMaxSize(),
                 uiSettings = MapUiSettings(
                     zoomControlsEnabled = true
                 )
@@ -103,6 +108,7 @@ fun Menu(currentLocation: LatLng?) {
                         )
                     }
                 }
+
                 // Add current location marker
                 currentLocation?.let {
                     Marker(
@@ -127,12 +133,14 @@ fun Menu(currentLocation: LatLng?) {
                 }
             }
         }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .background(MaterialTheme.colorScheme.primary),
-            horizontalArrangement = Arrangement.SpaceEvenly
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(top = 8.dp, bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // State to control the visibility of the "Report Zombie" dialog
             val openReportDialog = remember { mutableStateOf(false) }
@@ -162,18 +170,15 @@ fun Menu(currentLocation: LatLng?) {
                 }
             }
 
-            ElevatedButton(onClick = { onClick() }) {
+            ElevatedButton(onClick = {}) {
                 Text("SOS")
             }
-            ElevatedButton(onClick = { onClick() }) {
+
+            ElevatedButton(onClick = {}) {
                 Text("Sound Grenade")
             }
         }
     }
-}
-
-fun onClick() {
-    TODO("Not yet implemented")
 }
 
 @Composable
