@@ -31,7 +31,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
@@ -143,7 +145,7 @@ fun Menu(currentLocation: LatLng?) {
                         val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
                         Marker(
                             state = markerState,
-                            title = "Report Zombie",
+                            title = "Watch out! A zombie is in your area.",
                             icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                         )
                     }
@@ -216,16 +218,70 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLn
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Text(
+                    text = "REPORT ZOMBIE",
+                    color = Color.Red,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp),
+                )
                 Image(
                     painter = painterResource(id = R.drawable.zombie_marker),
                     contentDescription = "Zombie Image in Report Zombie dialog",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(160.dp)
+                    modifier = Modifier.height(100.dp)
                 )
                 Text(
                     text = "Are you sure you want to \n" +
                             "report Zombies in your current \n" +
                             "location (3km range)?",
+                    modifier = Modifier.padding(16.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = { onYes(currentLocation) },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Yes")
+                    }
+                    TextButton(
+                        onClick = { onNo() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("No")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SOSDialog(onNo: () -> Unit,  onYes: () -> Unit) {
+
+    Dialog(onDismissRequest = onNo) {
+        // Draw a rectangle shape with rounded corners inside the dialog
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(375.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "Are you sure you want to share \n" +
+                            "your location with your \n" +
+                            "emergency contacts?",
                     modifier = Modifier.padding(16.dp),
                 )
                 Row(
@@ -240,7 +296,7 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLn
                         Text("No")
                     }
                     TextButton(
-                        onClick = { onYes(currentLocation) },
+                        onClick = { onYes() },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("Yes")
