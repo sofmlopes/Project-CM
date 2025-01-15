@@ -1,14 +1,20 @@
 package com.example.walkingundead.screens
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
+import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
@@ -148,6 +156,15 @@ fun Menu(currentLocation: LatLng?) {
                             title = "Watch out! A zombie is in your area.",
                             icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                         )
+                    }
+                }
+                zombieReports.forEach { report ->
+                    val zombieLocation = parseLocation(report.location)
+                    if (zombieLocation != null && currentLocation != null) {
+                        if (isZombieNear(currentLocation, zombieLocation, 3000f)) {
+                            sendNotificationZombiesInTheArea("zombie_alert_channel", "Zombie Alert",
+                                "Channel for zombie proximity alerts", LocalContext.current)
+                        }
                     }
                 }
             }
@@ -323,4 +340,54 @@ fun parseLocation(location: String?): LatLng? {
 // Function to scale the bitmap to a fixed size
 fun scaleBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap {
     return Bitmap.createScaledBitmap(bitmap, width, height, false)
+}
+
+fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, channel_description: String,
+                                    context : Context){
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is not in the Support Library.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(channelId, channel_name, importance).apply {
+            description = channel_description
+        }
+        // Register the channel with the system.
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        notificationManager?.createNotificationChannel(channel)
+    }
+    var builder = NotificationCompat.Builder(context, channelId)
+        .setSmallIcon(R.drawable.zombie_marker)
+        .setContentTitle("Zombie Alert!")
+        .setContentText("A zombie has been reported near your location!")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+    // Check notification permission for Android 13+ (API 33+)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            // Permission is granted, send the notification
+            NotificationManagerCompat.from(context).notify(1, builder.build())
+        } else {
+            // Optionally, handle the case where permission is not granted
+            Log.w("Notification", "Notification permission not granted.")
+        }
+    } else {
+        // For devices below Android 13, no runtime permission is required
+        NotificationManagerCompat.from(context).notify(1, builder.build())
+    }
+}
+
+/**
+ * Function to calculate if a zombie is within range of the user (3 km)
+ */
+fun isZombieNear(userLocation: LatLng, zombieLocation: LatLng, rangeInMeters: Float): Boolean {
+    val location1 = Location("current")
+    location1.latitude = userLocation.latitude
+    location1.longitude = userLocation.longitude
+
+    val location2 = Location("zombie")
+    location2.latitude = zombieLocation.latitude
+    location2.longitude = zombieLocation.longitude
+
+    val distance = location1.distanceTo(location2)  // Distance in meters
+    return distance <= rangeInMeters
 }
