@@ -22,7 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
+import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -40,6 +42,8 @@ fun Menu(currentLocation: LatLng?) {
 
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
+    //State for Zombie Reports
+    var zombieReports by remember { mutableStateOf<List<ReportZombie>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         database.getAllMedicines { fetchedMedicines ->
@@ -108,6 +112,19 @@ fun Menu(currentLocation: LatLng?) {
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
                     )
                 }
+
+                //Show zombie markers on the Map
+                zombieReports.forEach { report ->
+                    val location = parseLocation(report.location)
+                    location?.let {
+                        val markerState = rememberMarkerState(position = it)
+                        Marker(
+                            state = markerState,
+                            title = "Report Zombie",
+                            icon = BitmapDescriptorFactory.fromResource(R.drawable.zombie_marker)
+                        )
+                    }
+                }
             }
         }
         Row(
@@ -127,14 +144,22 @@ fun Menu(currentLocation: LatLng?) {
 
             // Show the dialog when openReportDialog is true
             if (openReportDialog.value) {
-                ReportZombieDialog(
-                    onNo = { openReportDialog.value = false },
-                    onYes = {
-                        // Add your "Report Zombie" action logic here
-                        println("Zombies reported!")
-                        openReportDialog.value = false
-                    }
-                )
+                if (currentLocation != null) {
+                    ReportZombieDialog(
+                        currentLocation = currentLocation,
+                        onNo = { openReportDialog.value = false },
+                        onYes = { location ->
+                            // Create a location string
+                            val locationString = "${location.latitude},${location.longitude}"
+
+                            // Save to database using the addNewReportZombie function
+                            database.addNewReportZombie(locationString)
+
+                            // Close the dialog
+                            openReportDialog.value = false
+                        }
+                    )
+                }
             }
 
             ElevatedButton(onClick = { onClick() }) {
@@ -152,7 +177,7 @@ fun onClick() {
 }
 
 @Composable
-fun ReportZombieDialog(onNo: () -> Unit, onYes: () -> Unit,) {
+fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLng) -> Unit) {
 
     Dialog(onDismissRequest = onNo) {
 
@@ -174,7 +199,7 @@ fun ReportZombieDialog(onNo: () -> Unit, onYes: () -> Unit,) {
                 Text("No")
             }
             TextButton(
-                onClick = { onYes() },
+                onClick = { onYes(currentLocation) },
                 modifier = Modifier.padding(8.dp),
             ) {
                 Text("Yes")

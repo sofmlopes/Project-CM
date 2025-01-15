@@ -3,6 +3,7 @@ package com.example.walkingundead.services
 import android.util.Log
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
+import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -164,5 +165,22 @@ class DatabaseService {
                 Log.e("FirebaseError", "Error fetching medicines", error.toException())
             }
         })
+    }
+
+    fun addNewReportZombie(location: String) {
+        val reportZombie = ReportZombie(
+            location = location,
+            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
+        )
+
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Report Zombie")
+
+        dbReference.push().setValue(reportZombie)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpload", "Added report zombie to database")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpload", "Failed to add report zombie to database", exception)
+            }
     }
 }
