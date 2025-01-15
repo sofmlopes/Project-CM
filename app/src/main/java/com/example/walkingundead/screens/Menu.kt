@@ -162,19 +162,21 @@ fun Menu(currentLocation: LatLng?) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             // State to control the visibility of the "Report Zombie" dialog
-            val openReportDialog = remember { mutableStateOf(false) }
+            var openReportDialog by remember { mutableStateOf(false) }
 
             // The main menu UI
-            ElevatedButton(onClick = { openReportDialog.value = true }) {
+            ElevatedButton(onClick = {
+                openReportDialog = true
+            }) {
                 Text("Report Zombie")
             }
 
             // Show the dialog when openReportDialog is true
-            if (openReportDialog.value) {
+            if (openReportDialog) {
                 if (currentLocation != null) {
                     ReportZombieDialog(
                         currentLocation = currentLocation,
-                        onNo = { openReportDialog.value = false },
+                        onNo = { openReportDialog = false },
                         onYes = { location ->
                             // Create a location string
                             val locationString = "${location.latitude},${location.longitude}"
@@ -183,7 +185,7 @@ fun Menu(currentLocation: LatLng?) {
                             database.addNewReportZombie(locationString)
 
                             // Close the dialog
-                            openReportDialog.value = false
+                            openReportDialog = false
                         }
                     )
                 }
