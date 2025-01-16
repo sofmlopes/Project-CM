@@ -2,7 +2,9 @@ package com.example.walkingundead.screens
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -217,6 +219,10 @@ fun Menu(currentLocation: LatLng?) {
     }
 }
 
+/**
+ * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
+ * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
+ */
 @Composable
 fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLng) -> Unit) {
 
@@ -277,6 +283,10 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLn
     }
 }
 
+/**
+ * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
+ * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
+ */
 @Composable
 fun SOSDialog(onNo: () -> Unit,  onYes: () -> Unit) {
 
@@ -342,6 +352,10 @@ fun scaleBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap {
     return Bitmap.createScaledBitmap(bitmap, width, height, false)
 }
 
+/**
+ * Android Developers. (n.d.). Build a notification. Google. Retrieved January 15, 2025,
+ * from https://developer.android.com/develop/ui/views/notifications/build-notification?hl=pt-br
+ */
 fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, channel_description: String,
                                     context : Context){
     // Create the NotificationChannel, but only on API 26+ because
@@ -355,11 +369,20 @@ fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, c
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         notificationManager?.createNotificationChannel(channel)
     }
+    // Create an explicit intent for an Activity in your app.
+    val intent = Intent(context, AlertDetails::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
     var builder = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(R.drawable.zombie_marker)
         .setContentTitle("Zombie Alert!")
         .setContentText("A zombie has been reported near your location!")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        // Set the intent that fires when the user taps the notification.
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
 
     // Check notification permission for Android 13+ (API 33+)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
