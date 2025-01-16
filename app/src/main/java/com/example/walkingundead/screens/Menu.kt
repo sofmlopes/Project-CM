@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.getSystemService
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
@@ -57,6 +58,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+
 
 @Composable
 fun Menu(currentLocation: LatLng?) {
@@ -111,11 +113,15 @@ fun Menu(currentLocation: LatLng?) {
                     val location = parseLocation(medicine.location)
                     location?.let {
                         val markerState = rememberMarkerState(position = it)
+                        // Convert the image resource to Bitmap
+                        val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.medicine_marker)
+                        // Scale the bitmap to a fixed size
+                        val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
                         Marker(
                             state = markerState,
                             title = "Medicine: ${medicine.name}",
                             snippet = "Quantity: ${medicine.quantity}",
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE),
+                            icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                         )
                     }
                 }
@@ -125,11 +131,15 @@ fun Menu(currentLocation: LatLng?) {
                     val location = parseLocation(shelter.location)
                     location?.let {
                         val markerState = rememberMarkerState(position = it)
+                        // Convert the image resource to Bitmap
+                        val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.shelter_marker)
+                        // Scale the bitmap to a fixed size
+                        val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
                         Marker(
                             state = markerState,
                             title = "Shelter: ${shelter.name}",
                             snippet = "Capacity: ${shelter.numberOfBeds}",
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
+                            icon = BitmapDescriptorFactory.fromBitmap(bitmap),
                         )
                     }
                 }
@@ -375,7 +385,7 @@ fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, c
     }
     val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-    var builder = NotificationCompat.Builder(context, channelId)
+    val builder = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(R.drawable.zombie_marker)
         .setContentTitle("Zombie Alert!")
         .setContentText("A zombie has been reported near your location!")

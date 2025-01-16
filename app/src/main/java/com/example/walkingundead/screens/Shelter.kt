@@ -42,7 +42,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
-import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
 
@@ -169,7 +168,7 @@ fun Shelter() {
             }
 
 
-            // Medicine List (List of medicines)
+            // Shelters List (List of shelters)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,7 +176,7 @@ fun Shelter() {
                     .padding(all = 10.dp)
             ) {
                 if (shelterList.isEmpty()) {
-                    Text("No medicines available", color = Color.Gray)
+                    Text("No shelters available", color = Color.Gray)
                 } else {
                     shelterList.forEach { shelter ->
                         ShelterItem(
@@ -264,7 +263,7 @@ fun Shelter() {
                         ) {
                             Button(
                                 onClick = {
-                                    // Save the medicine to the database
+                                    // Save the shelter to the database
                                     val nrOfBedsSave = numberOfBeds
                                     val occupiedBedsSave = occupiedBeds
                                     database.addNewShelter(name, location, nrOfBedsSave, occupiedBedsSave)
