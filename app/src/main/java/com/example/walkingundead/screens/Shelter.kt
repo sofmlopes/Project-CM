@@ -67,6 +67,14 @@ fun Shelter() {
     var textValueNrBeds by remember { mutableStateOf("") }
     var textValueOccupiedBeds by remember { mutableStateOf("") }
 
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Filter medicines based on the search query
+    val filteredShelterList = shelterList.filter {
+        it.name?.contains(searchQuery, ignoreCase = true) ?: false || // Match name
+                it.location?.contains(searchQuery, ignoreCase = true) ?: false // Match location
+    }
+
     /*
     val shelterList = listOf(
         Shelter(
@@ -106,9 +114,9 @@ fun Shelter() {
         ) {
             // Search Bar
             TextField(
-                value = "",
-                onValueChange = { /* Handle Search */ },
-                placeholder = { Text("Search Shelter", color = Color.Gray) },
+                value = searchQuery,
+                onValueChange = { searchQuery = it }, // Update the search query
+                placeholder = { Text("Search Shelter", color = Color.DarkGray) },
                 modifier = Modifier
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .fillMaxWidth(),
@@ -175,10 +183,10 @@ fun Shelter() {
                     .background(Color.LightGray, RoundedCornerShape(8.dp))
                     .padding(all = 10.dp)
             ) {
-                if (shelterList.isEmpty()) {
+                if (filteredShelterList.isEmpty()) {
                     Text("No shelters available", color = Color.Gray)
                 } else {
-                    shelterList.forEach { shelter ->
+                    filteredShelterList.forEach { shelter ->
                         ShelterItem(
                             shelter
                         )
