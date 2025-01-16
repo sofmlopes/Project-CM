@@ -361,7 +361,7 @@ fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, c
     // Create the NotificationChannel, but only on API 26+ because
     // the NotificationChannel class is not in the Support Library.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH // High importance for heads-up notifications
         val channel = NotificationChannel(channelId, channel_name, importance).apply {
             description = channel_description
         }
@@ -379,7 +379,8 @@ fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, c
         .setSmallIcon(R.drawable.zombie_marker)
         .setContentTitle("Zombie Alert!")
         .setContentText("A zombie has been reported near your location!")
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setPriority(NotificationCompat.PRIORITY_HIGH) // High priority
+        .setDefaults(NotificationCompat.DEFAULT_ALL) // Enable sound and vibration
         // Set the intent that fires when the user taps the notification.
         .setContentIntent(pendingIntent)
         .setAutoCancel(true)
