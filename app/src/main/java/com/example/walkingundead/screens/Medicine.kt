@@ -68,6 +68,8 @@ fun Medicine() {
         }
     }
 
+
+
     //Variables to add new entry
     var name by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
@@ -76,6 +78,14 @@ fun Medicine() {
     var textValue by remember { mutableStateOf("") }
     var isLocationDialogVisible by remember { mutableStateOf(false) }
     var markerPosition by remember { mutableStateOf<LatLng?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Filter medicines based on the search query
+    val filteredMedicines = medicines.filter {
+        it.name?.contains(searchQuery, ignoreCase = true) ?: false || // Match name
+                it.type?.contains(searchQuery, ignoreCase = true) ?: false || // Match type
+                it.location?.contains(searchQuery, ignoreCase = true) ?: false // Match location
+    }
 
     val scrollState = rememberScrollState()
 
@@ -94,8 +104,8 @@ fun Medicine() {
         ) {
             // Search Bar
             TextField(
-                value = "",
-                onValueChange = { /* Handle Search */ },
+                value = searchQuery,
+                onValueChange = { searchQuery = it }, // Update the search query
                 placeholder = { Text("Search Medicines", color = Color.DarkGray) },
                 modifier = Modifier
                     .background(Color.White, RoundedCornerShape(8.dp))
@@ -162,10 +172,10 @@ fun Medicine() {
                     .background(Color.LightGray, RoundedCornerShape(8.dp))
                     .padding(all = 10.dp)
             ) {
-                if (medicines.isEmpty()) {
+                if (filteredMedicines.isEmpty()) {
                     Text("No medicines available", color = Color.DarkGray)
                 } else {
-                    medicines.forEach { medicine ->
+                    filteredMedicines.forEach { medicine ->
                         MedicineItem(
                             medicine
                         )
