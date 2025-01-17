@@ -9,6 +9,8 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -45,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
@@ -58,7 +59,6 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-
 
 @Composable
 fun Menu(currentLocation: LatLng?) {
@@ -218,12 +218,52 @@ fun Menu(currentLocation: LatLng?) {
                 }
             }
 
-            ElevatedButton(onClick = {}) {
+            // State to control the visibility of the "SOS" dialog
+            var openSOSDialog by remember { mutableStateOf(false) }
+            // The main menu UI
+            ElevatedButton(onClick = { openSOSDialog = true }) {
                 Text("SOS")
             }
+            // Show the dialog when openReportDialog is true
+            if (openSOSDialog) {
+                SOSDialog(
+                    onNo = { openSOSDialog = false },
+                    onYes = {
+                        // Close the dialog
+                        openSOSDialog = false
+                    }
+                )
+            }
 
-            ElevatedButton(onClick = {}) {
+            // State to control the visibility of the "Sound Grenade" dialog
+            var openSoundGrenadeDialog by remember { mutableStateOf(false) }
+            // The main menu UI
+            ElevatedButton(onClick = { openSoundGrenadeDialog = true }) {
                 Text("Sound Grenade")
+            }
+            // Show the dialog when openReportDialog is true
+            if (openSoundGrenadeDialog) {
+                SoundGrenadeDialog(
+                    onNo = { openSoundGrenadeDialog = false },
+                    onYes = { context ->
+
+                        // Get AudioManager instance
+                        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+                        // Set the volume to max for the desired stream
+                        audioManager.adjustStreamVolume(
+                            AudioManager.STREAM_MUSIC,
+                            AudioManager.ADJUST_RAISE,
+                            AudioManager.FLAG_PLAY_SOUND
+                        )
+
+                        val tone = ToneGenerator(AudioManager.STREAM_DTMF, 100); // 100 is max volume
+                        tone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 500); // 500ms
+
+                        // Close the dialog
+                        openSoundGrenadeDialog = false
+                    }
+                )
             }
         }
     }
@@ -315,6 +355,12 @@ fun SOSDialog(onNo: () -> Unit,  onYes: () -> Unit) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Image(
+                    painter = painterResource(id = R.drawable.sos_icon),
+                    contentDescription = "SOS icon in SOS dialog",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.height(100.dp)
+                )
                 Text(
                     text = "Are you sure you want to share \n" +
                             "your location with your \n" +
@@ -327,16 +373,77 @@ fun SOSDialog(onNo: () -> Unit,  onYes: () -> Unit) {
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     TextButton(
+                        onClick = { onYes() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Yes")
+                    }
+                    TextButton(
                         onClick = { onNo() },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("No")
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
+ * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
+ */
+@Composable
+fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
+
+    val context = LocalContext.current
+
+    Dialog(onDismissRequest = onNo) {
+        // Draw a rectangle shape with rounded corners inside the dialog
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(375.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.sound_grenade_icon),
+                    contentDescription = "Sound Grenade icon in Sound Grenade dialog",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.height(100.dp)
+                )
+                Text(
+                    text = "Are you sure you want to emit \n" +
+                            "a loud sound to distract the \n" +
+                            "zombies? If you want to use a \n" +
+                            "Bluetooth speaker, active \n" +
+                            "Bluetooth first.",
+                    modifier = Modifier.padding(16.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
                     TextButton(
-                        onClick = { onYes() },
+                        onClick = { onYes(context) },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("Yes")
+                    }
+                    TextButton(
+                        onClick = { onNo() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("No")
                     }
                 }
             }
