@@ -252,13 +252,13 @@ fun Menu(currentLocation: LatLng?) {
 
                         // Set the volume to max for the desired stream
                         audioManager.adjustStreamVolume(
-                            AudioManager.STREAM_MUSIC,
+                            AudioManager.STREAM_ALARM,
                             AudioManager.ADJUST_RAISE,
                             AudioManager.FLAG_PLAY_SOUND
                         )
 
-                        val tone = ToneGenerator(AudioManager.STREAM_DTMF, 100); // 100 is max volume
-                        tone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 500); // 500ms
+                        val tone = ToneGenerator(AudioManager.STREAM_ALARM, 100) // 100 is max volume
+                        tone.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT, 5000)
 
                         // Close the dialog
                         openSoundGrenadeDialog = false
