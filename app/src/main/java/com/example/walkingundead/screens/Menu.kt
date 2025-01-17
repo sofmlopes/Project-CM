@@ -11,8 +11,10 @@ import android.graphics.BitmapFactory
 import android.location.Location
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,11 +42,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.walkingundead.R
@@ -59,6 +65,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import java.util.jar.Manifest
 
 @Composable
 fun Menu(currentLocation: LatLng?) {
@@ -225,10 +232,23 @@ fun Menu(currentLocation: LatLng?) {
                 Text("SOS")
             }
             // Show the dialog when openReportDialog is true
+            // Stack Overflow. (n.d.). How can I call emergency number programmatically?
+            // Retrieved January 17, 2025, from
+            // https://stackoverflow.com/questions/20770024/how-can-i-call-emergency-number-programmatically
             if (openSOSDialog) {
                 SOSDialog(
                     onNo = { openSOSDialog = false },
-                    onYes = {
+                    onYes = { context, phoneNumber ->
+
+                        val intent = Intent(Intent.ACTION_CALL).apply {
+                            data = Uri.parse("tel:$phoneNumber")
+                        }
+                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                            context.startActivity(intent)
+                        } else {
+                            // Request permission if not granted (you can implement a permission request dialog)
+                            Toast.makeText(context, "Permission to make calls is required", Toast.LENGTH_SHORT).show()
+                        }
                         // Close the dialog
                         openSOSDialog = false
                     }
@@ -242,6 +262,11 @@ fun Menu(currentLocation: LatLng?) {
                 Text("Sound Grenade")
             }
             // Show the dialog when openReportDialog is true
+            /**
+             * Stack Overflow. (n.d.). How to play a loud alert sound (beep) in Android?
+             * Retrieved January 16, 2025, from
+             * https://stackoverflow.com/questions/33159723/how-to-play-a-loud-alert-sound-beep-in-android
+             */
             if (openSoundGrenadeDialog) {
                 SoundGrenadeDialog(
                     onNo = { openSoundGrenadeDialog = false },
@@ -319,13 +344,13 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLn
                         onClick = { onYes(currentLocation) },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("Yes")
+                        Text("YES")
                     }
                     TextButton(
                         onClick = { onNo() },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("No")
+                        Text("NO")
                     }
                 }
             }
@@ -338,7 +363,10 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLn
  * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
  */
 @Composable
-fun SOSDialog(onNo: () -> Unit,  onYes: () -> Unit) {
+fun SOSDialog(onNo: () -> Unit,  onYes: (Context,String) -> Unit) {
+
+    val context = LocalContext.current
+    val emergencyNumber = "934051473"
 
     Dialog(onDismissRequest = onNo) {
         // Draw a rectangle shape with rounded corners inside the dialog
@@ -370,19 +398,20 @@ fun SOSDialog(onNo: () -> Unit,  onYes: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                    //horizontalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
-                        onClick = { onYes() },
+                        onClick = { onYes(context,emergencyNumber) },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("Yes")
+                        Text("YES")
                     }
                     TextButton(
                         onClick = { onNo() },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("No")
+                        Text("NO")
                     }
                 }
             }
@@ -414,6 +443,13 @@ fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Text(
+                    text = "SOUND GRENADE",
+                    color = colorResource(id = R.color.purple_500),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp)
+                )
                 Image(
                     painter = painterResource(id = R.drawable.sound_grenade_icon),
                     contentDescription = "Sound Grenade icon in Sound Grenade dialog",
@@ -437,13 +473,13 @@ fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
                         onClick = { onYes(context) },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("Yes")
+                        Text("YES")
                     }
                     TextButton(
                         onClick = { onNo() },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("No")
+                        Text("NO")
                     }
                 }
             }
