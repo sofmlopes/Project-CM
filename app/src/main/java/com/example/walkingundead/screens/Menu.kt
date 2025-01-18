@@ -27,15 +27,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -52,7 +49,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -66,6 +62,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.walkingundead.R
+import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
@@ -85,6 +82,7 @@ fun Menu(currentLocation: LatLng?) {
 
     val database = RepositoryProvider.databaseRepository
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
+    var foods by remember { mutableStateOf<List<Food>>(emptyList()) }
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
     //State for Zombie Reports
     var zombieReports by remember { mutableStateOf<List<ReportZombie>>(emptyList()) }
@@ -102,6 +100,7 @@ fun Menu(currentLocation: LatLng?) {
 
     LaunchedEffect(Unit) {
         database.getAllMedicines { fetchedMedicines -> medicines = fetchedMedicines }
+        database.getAllFoods { fetchedFoods-> foods = fetchedFoods }
         database.getAllShelters { fetchedShelters -> shelterList = fetchedShelters }
         database.getAllZombies { fetchedReports -> zombieReports = fetchedReports }
     }
@@ -149,7 +148,25 @@ fun Menu(currentLocation: LatLng?) {
                         }
                     }
                 }
-
+                // Add food markers
+                foods.forEach { food ->
+                    if(isFoodFiltered){
+                        val location = parseLocation(food.location)
+                        location?.let {
+                            val markerState = rememberMarkerState(position = it)
+                            // Convert the image resource to Bitmap
+                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.food_marker)
+                            // Scale the bitmap to a fixed size
+                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
+                            Marker(
+                                state = markerState,
+                                title = "Medicine: ${food.name}",
+                                snippet = "Quantity: ${food.quantity}",
+                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                            )
+                        }
+                    }
+                }
                 // Add shelter markers
                 shelterList.forEach { shelter ->
                     if(isShelterFiltered){
