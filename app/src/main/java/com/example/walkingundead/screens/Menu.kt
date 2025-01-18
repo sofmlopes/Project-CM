@@ -107,7 +107,9 @@ fun Menu(currentLocation: LatLng?) {
     }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(38.736946, -9.142685), 10f)
+        val defaultLatLng = LatLng(38.736946, -9.142685) // Default location
+        val location = currentLocation ?: defaultLatLng
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(location, 10f)
     }
 
     Column(
