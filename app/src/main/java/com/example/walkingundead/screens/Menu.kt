@@ -63,6 +63,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.walkingundead.R
+import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
@@ -83,6 +84,7 @@ fun Menu(currentLocation: LatLng?) {
 
     val database = RepositoryProvider.databaseRepository
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
+    var foods by remember { mutableStateOf<List<Food>>(emptyList()) }
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
     //State for Zombie Reports
     var zombieReports by remember { mutableStateOf<List<ReportZombie>>(emptyList()) }
@@ -100,6 +102,7 @@ fun Menu(currentLocation: LatLng?) {
 
     LaunchedEffect(Unit) {
         database.getAllMedicines { fetchedMedicines -> medicines = fetchedMedicines }
+        database.getAllFoods { fetchedFoods-> foods = fetchedFoods }
         database.getAllShelters { fetchedShelters -> shelterList = fetchedShelters }
         database.getAllZombies { fetchedReports -> zombieReports = fetchedReports }
     }
@@ -147,7 +150,25 @@ fun Menu(currentLocation: LatLng?) {
                         }
                     }
                 }
-
+                // Add food markers
+                foods.forEach { food ->
+                    if(isFoodFiltered){
+                        val location = parseLocation(food.location)
+                        location?.let {
+                            val markerState = rememberMarkerState(position = it)
+                            // Convert the image resource to Bitmap
+                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.food_marker)
+                            // Scale the bitmap to a fixed size
+                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
+                            Marker(
+                                state = markerState,
+                                title = "Medicine: ${food.name}",
+                                snippet = "Quantity: ${food.quantity}",
+                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                            )
+                        }
+                    }
+                }
                 // Add shelter markers
                 shelterList.forEach { shelter ->
                     if(isShelterFiltered){
