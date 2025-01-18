@@ -1,5 +1,6 @@
 package com.example.walkingundead.screens
 
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -25,9 +26,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,13 +46,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +57,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
@@ -65,7 +70,8 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import java.util.jar.Manifest
+
+private const val REQUEST_CALL_PERMISSION = 1
 
 @Composable
 fun Menu(currentLocation: LatLng?) {
@@ -188,7 +194,88 @@ fun Menu(currentLocation: LatLng?) {
                 }
             }
         }
+        Column{
+            var isZombiesFiltered by remember { mutableStateOf(false) }
 
+            FilterChip(
+                onClick = { isZombiesFiltered = !isZombiesFiltered },
+                label = {
+                    Text("Filter Zombies")
+                },
+                selected = isZombiesFiltered,
+                leadingIcon = if (isZombiesFiltered) {
+                    {
+                        Icon(
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = "Done icon",
+                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                        )
+                    }
+                } else {
+                    null
+                },
+            )
+            var isMedicineFiltered by remember { mutableStateOf(false) }
+
+            FilterChip(
+                onClick = { isMedicineFiltered = !isMedicineFiltered },
+                label = {
+                    Text("Filter Medicine")
+                },
+                selected = isMedicineFiltered,
+                leadingIcon = if (isMedicineFiltered) {
+                    {
+                        Icon(
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = "Done icon",
+                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                        )
+                    }
+                } else {
+                    null
+                },
+            )
+            var isFoodFiltered by remember { mutableStateOf(false) }
+
+            FilterChip(
+                onClick = { isFoodFiltered = !isFoodFiltered },
+                label = {
+                    Text("Filter Food")
+                },
+                selected = isFoodFiltered,
+                leadingIcon = if (isFoodFiltered) {
+                    {
+                        Icon(
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = "Done icon",
+                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                        )
+                    }
+                } else {
+                    null
+                },
+            )
+            var isShelterFiltered by remember { mutableStateOf(false) }
+
+            FilterChip(
+                onClick = { isShelterFiltered = !isShelterFiltered },
+                label = {
+                    Text("Filter Shelters")
+                },
+                selected = isShelterFiltered,
+                leadingIcon = if (isShelterFiltered) {
+                    {
+                        Icon(
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = "Done icon",
+                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                        )
+                    }
+                } else {
+                    null
+                },
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -240,14 +327,16 @@ fun Menu(currentLocation: LatLng?) {
                     onNo = { openSOSDialog = false },
                     onYes = { context, phoneNumber ->
 
-                        val intent = Intent(Intent.ACTION_CALL).apply {
-                            data = Uri.parse("tel:$phoneNumber")
-                        }
-                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                            // Permission granted, make the call
+                            val intent = Intent(Intent.ACTION_CALL).apply {
+                                data = Uri.parse("tel:$phoneNumber")
+                            }
                             context.startActivity(intent)
-                        } else {
-                            // Request permission if not granted (you can implement a permission request dialog)
-                            Toast.makeText(context, "Permission to make calls is required", Toast.LENGTH_SHORT).show()
+                        }
+                        else {
+                            // Permission not granted, request permission
+                            ActivityCompat.requestPermissions(context as Activity, arrayOf(android.Manifest.permission.CALL_PHONE), REQUEST_CALL_PERMISSION)
                         }
                         // Close the dialog
                         openSOSDialog = false
@@ -282,8 +371,8 @@ fun Menu(currentLocation: LatLng?) {
                             AudioManager.FLAG_PLAY_SOUND
                         )
 
-                        val tone = ToneGenerator(AudioManager.STREAM_ALARM, 100) // 100 is max volume
-                        tone.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT, 5000)
+                        val tone = ToneGenerator(AudioManager.STREAM_ALARM, 500) // 100 is max volume
+                        tone.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT, 10000)
 
                         // Close the dialog
                         openSoundGrenadeDialog = false
@@ -318,7 +407,7 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLn
             ) {
                 Text(
                     text = "REPORT ZOMBIE",
-                    color = Color.Red,
+                    color = colorResource(id = R.color.purple_500),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(16.dp),
@@ -338,7 +427,8 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLn
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                    //horizontalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
                         onClick = { onYes(currentLocation) },
@@ -383,6 +473,13 @@ fun SOSDialog(onNo: () -> Unit,  onYes: (Context,String) -> Unit) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Text(
+                    text = "EMERGENCY CALL",
+                    color = colorResource(id = R.color.purple_500),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp),
+                )
                 Image(
                     painter = painterResource(id = R.drawable.sos_icon),
                     contentDescription = "SOS icon in SOS dialog",
@@ -459,15 +556,14 @@ fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
                 Text(
                     text = "Are you sure you want to emit \n" +
                             "a loud sound to distract the \n" +
-                            "zombies? If you want to use a \n" +
-                            "Bluetooth speaker, active \n" +
-                            "Bluetooth first.",
+                            "zombies?",
                     modifier = Modifier.padding(16.dp),
                 )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                    //horizontalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
                         onClick = { onYes(context) },
