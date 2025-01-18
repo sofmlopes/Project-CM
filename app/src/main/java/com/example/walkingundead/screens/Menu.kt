@@ -15,7 +15,6 @@ import android.media.ToneGenerator
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -77,11 +76,20 @@ private const val REQUEST_CALL_PERMISSION = 1
 fun Menu(currentLocation: LatLng?) {
 
     val database = RepositoryProvider.databaseRepository
-
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
     //State for Zombie Reports
     var zombieReports by remember { mutableStateOf<List<ReportZombie>>(emptyList()) }
+    var isZombiesFiltered by remember { mutableStateOf(false) }
+    var isMedicineFiltered by remember { mutableStateOf(false)}
+    var isFoodFiltered by remember { mutableStateOf(false) }
+    var isShelterFiltered by remember { mutableStateOf(false) }
+    // State to control the visibility of the "Report Zombie" dialog
+    var openReportDialog by remember { mutableStateOf(false) }
+    // State to control the visibility of the "SOS" dialog
+    var openSOSDialog by remember { mutableStateOf(false) }
+    // State to control the visibility of the "Sound Grenade" dialog
+    var openSoundGrenadeDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         database.getAllMedicines { fetchedMedicines ->
@@ -123,37 +131,41 @@ fun Menu(currentLocation: LatLng?) {
             ) {
                 // Add medicine markers
                 medicines.forEach { medicine ->
-                    val location = parseLocation(medicine.location)
-                    location?.let {
-                        val markerState = rememberMarkerState(position = it)
-                        // Convert the image resource to Bitmap
-                        val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.medicine_marker)
-                        // Scale the bitmap to a fixed size
-                        val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
-                        Marker(
-                            state = markerState,
-                            title = "Medicine: ${medicine.name}",
-                            snippet = "Quantity: ${medicine.quantity}",
-                            icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
-                        )
+                    if(isMedicineFiltered){
+                        val location = parseLocation(medicine.location)
+                        location?.let {
+                            val markerState = rememberMarkerState(position = it)
+                            // Convert the image resource to Bitmap
+                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.medicine_marker)
+                            // Scale the bitmap to a fixed size
+                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
+                            Marker(
+                                state = markerState,
+                                title = "Medicine: ${medicine.name}",
+                                snippet = "Quantity: ${medicine.quantity}",
+                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                            )
+                        }
                     }
                 }
 
                 // Add shelter markers
                 shelterList.forEach { shelter ->
-                    val location = parseLocation(shelter.location)
-                    location?.let {
-                        val markerState = rememberMarkerState(position = it)
-                        // Convert the image resource to Bitmap
-                        val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.shelter_marker)
-                        // Scale the bitmap to a fixed size
-                        val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
-                        Marker(
-                            state = markerState,
-                            title = "Shelter: ${shelter.name}",
-                            snippet = "Capacity: ${shelter.numberOfBeds}",
-                            icon = BitmapDescriptorFactory.fromBitmap(bitmap),
-                        )
+                    if(isShelterFiltered){
+                        val location = parseLocation(shelter.location)
+                        location?.let {
+                            val markerState = rememberMarkerState(position = it)
+                            // Convert the image resource to Bitmap
+                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.shelter_marker)
+                            // Scale the bitmap to a fixed size
+                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
+                            Marker(
+                                state = markerState,
+                                title = "Shelter: ${shelter.name}",
+                                snippet = "Capacity: ${shelter.numberOfBeds}",
+                                icon = BitmapDescriptorFactory.fromBitmap(bitmap),
+                            )
+                        }
                     }
                 }
 
@@ -169,18 +181,20 @@ fun Menu(currentLocation: LatLng?) {
 
                 //Show zombie markers on the Map
                 zombieReports.forEach { report ->
-                    val location = parseLocation(report.location)
-                    location?.let {
-                        val markerState = rememberMarkerState(position = it)
-                        // Convert the image resource to Bitmap
-                        val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.zombie_marker)
-                        // Scale the bitmap to a fixed size
-                        val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
-                        Marker(
-                            state = markerState,
-                            title = "Watch out! A zombie is in your area.",
-                            icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
-                        )
+                    if(isZombiesFiltered){
+                        val location = parseLocation(report.location)
+                        location?.let {
+                            val markerState = rememberMarkerState(position = it)
+                            // Convert the image resource to Bitmap
+                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.zombie_marker)
+                            // Scale the bitmap to a fixed size
+                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
+                            Marker(
+                                state = markerState,
+                                title = "Watch out! A zombie is in your area.",
+                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                            )
+                        }
                     }
                 }
                 zombieReports.forEach { report ->
@@ -194,9 +208,11 @@ fun Menu(currentLocation: LatLng?) {
                 }
             }
         }
+        /**
+         * Android Developers. (n.d.). Chip. Retrieved January 18, 2025, from
+         * https://developer.android.com/develop/ui/compose/components/chip
+         */
         Column{
-            var isZombiesFiltered by remember { mutableStateOf(false) }
-
             FilterChip(
                 onClick = { isZombiesFiltered = !isZombiesFiltered },
                 label = {
@@ -215,8 +231,6 @@ fun Menu(currentLocation: LatLng?) {
                     null
                 },
             )
-            var isMedicineFiltered by remember { mutableStateOf(false) }
-
             FilterChip(
                 onClick = { isMedicineFiltered = !isMedicineFiltered },
                 label = {
@@ -235,8 +249,6 @@ fun Menu(currentLocation: LatLng?) {
                     null
                 },
             )
-            var isFoodFiltered by remember { mutableStateOf(false) }
-
             FilterChip(
                 onClick = { isFoodFiltered = !isFoodFiltered },
                 label = {
@@ -255,8 +267,6 @@ fun Menu(currentLocation: LatLng?) {
                     null
                 },
             )
-            var isShelterFiltered by remember { mutableStateOf(false) }
-
             FilterChip(
                 onClick = { isShelterFiltered = !isShelterFiltered },
                 label = {
@@ -284,14 +294,10 @@ fun Menu(currentLocation: LatLng?) {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // State to control the visibility of the "Report Zombie" dialog
-            var openReportDialog by remember { mutableStateOf(false) }
-
             // The main menu UI
             ElevatedButton(onClick = { openReportDialog = true }) {
                 Text("Report Zombie")
             }
-
             // Show the dialog when openReportDialog is true
             if (openReportDialog) {
                 if (currentLocation != null) {
@@ -311,9 +317,6 @@ fun Menu(currentLocation: LatLng?) {
                     )
                 }
             }
-
-            // State to control the visibility of the "SOS" dialog
-            var openSOSDialog by remember { mutableStateOf(false) }
             // The main menu UI
             ElevatedButton(onClick = { openSOSDialog = true }) {
                 Text("SOS")
@@ -343,13 +346,11 @@ fun Menu(currentLocation: LatLng?) {
                     }
                 )
             }
-
-            // State to control the visibility of the "Sound Grenade" dialog
-            var openSoundGrenadeDialog by remember { mutableStateOf(false) }
             // The main menu UI
             ElevatedButton(onClick = { openSoundGrenadeDialog = true }) {
                 Text("Sound Grenade")
             }
+
             // Show the dialog when openReportDialog is true
             /**
              * Stack Overflow. (n.d.). How to play a loud alert sound (beep) in Android?
