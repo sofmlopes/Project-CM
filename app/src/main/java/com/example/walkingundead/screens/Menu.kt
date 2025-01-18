@@ -300,7 +300,7 @@ fun Menu(currentLocation: LatLng?) {
                             AudioManager.FLAG_PLAY_SOUND
                         )
 
-                        val tone = ToneGenerator(AudioManager.STREAM_ALARM, 500) // 100 is max volume
+                        val tone = ToneGenerator(AudioManager.MODE_RINGTONE, 500)
                         tone.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT, 10000)
 
                         // Close the dialog
