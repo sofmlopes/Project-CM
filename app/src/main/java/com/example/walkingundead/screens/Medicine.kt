@@ -95,7 +95,7 @@ fun Medicine() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 100.dp)
+            .padding(top = 10.dp, start = 20.dp, end = 20.dp, bottom = 100.dp)
     ) {
         Column(
             modifier = Modifier
@@ -116,7 +116,7 @@ fun Medicine() {
                     color = colorResource(id = R.color.purple_500),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(vertical = 10.dp),
                 )
             }
             // Search Bar
