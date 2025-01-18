@@ -2,6 +2,7 @@ package com.example.walkingundead.services
 
 import android.util.Log
 import com.example.walkingundead.R
+import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
@@ -206,5 +207,72 @@ class DatabaseService {
             }
         })
 
+    }
+
+    fun getAllFoods(listener: (List<Food>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Food")
+
+        dbReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val foods = mutableListOf<Food>()
+                for (data in snapshot.children) {
+                    val food = data.getValue(Food::class.java)
+                    val id = data.key
+                    if (food != null && id != null) {
+                        food.id = id
+                        foods.add(food)
+                    }
+                }
+                listener(foods)  // Send the updated list to the listener
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching foods", error.toException())
+            }
+        })
+    }
+
+    fun editFoodEntry(id: String, updatedEntry: Food) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Food").child(id)
+
+        dbReference.setValue(updatedEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpdate", "Successfully updated food entry")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpdate", "Failed to update food entry", exception)
+            }
+    }
+
+    fun deleteFoodEntry(id: String) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Food").child(id)
+
+        dbReference.removeValue()
+            .addOnSuccessListener {
+                Log.d("FirebaseDelete", "Successfully deleted food entry with ID: $id")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseDelete", "Failed to delete food entry with ID: $id", exception)
+            }
+    }
+
+    fun addNewFoodEntry(name: String, type: String, location: String, quantity: Int) {
+        val foodEntry = Food(
+            name = name,
+            type = type,
+            location = location,
+            quantity = quantity,
+            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
+        )
+
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Food")
+
+        dbReference.push().setValue(foodEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpload", "Added food entry to database")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpload", "Failed to add food entry to database", exception)
+            }
     }
 }
