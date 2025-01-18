@@ -12,7 +12,6 @@ import android.graphics.BitmapFactory
 import android.location.Location
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.media.ToneGenerator
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -88,10 +87,10 @@ fun Menu(currentLocation: LatLng?) {
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
     //State for Zombie Reports
     var zombieReports by remember { mutableStateOf<List<ReportZombie>>(emptyList()) }
-    var isZombiesFiltered by remember { mutableStateOf(false) }
-    var isMedicineFiltered by remember { mutableStateOf(false)}
-    var isFoodFiltered by remember { mutableStateOf(false) }
-    var isShelterFiltered by remember { mutableStateOf(false) }
+    var isZombiesFiltered by remember { mutableStateOf(true) }
+    var isMedicineFiltered by remember { mutableStateOf(true)}
+    var isFoodFiltered by remember { mutableStateOf(true) }
+    var isShelterFiltered by remember { mutableStateOf(true) }
     // State to control the visibility of the "Report Zombie" dialog
     var openReportDialog by remember { mutableStateOf(false) }
     // State to control the visibility of the "SOS" dialog
@@ -362,7 +361,7 @@ fun Menu(currentLocation: LatLng?) {
                             FilterChip(
                                 onClick = { isZombiesFiltered = !isZombiesFiltered },
                                 label = {
-                                    Text("Filter Zombies")
+                                    Text("Show Zombies")
                                 },
                                 selected = isZombiesFiltered,
                                 leadingIcon = if (isZombiesFiltered) {
@@ -380,7 +379,7 @@ fun Menu(currentLocation: LatLng?) {
                             FilterChip(
                                 onClick = { isMedicineFiltered = !isMedicineFiltered },
                                 label = {
-                                    Text("Filter Medicine")
+                                    Text("Show Medicine")
                                 },
                                 selected = isMedicineFiltered,
                                 leadingIcon = if (isMedicineFiltered) {
@@ -398,7 +397,7 @@ fun Menu(currentLocation: LatLng?) {
                             FilterChip(
                                 onClick = { isFoodFiltered = !isFoodFiltered },
                                 label = {
-                                    Text("Filter Food")
+                                    Text("Show Food")
                                 },
                                 selected = isFoodFiltered,
                                 leadingIcon = if (isFoodFiltered) {
@@ -416,7 +415,7 @@ fun Menu(currentLocation: LatLng?) {
                             FilterChip(
                                 onClick = { isShelterFiltered = !isShelterFiltered },
                                 label = {
-                                    Text("Filter Shelters")
+                                    Text("Show Shelters")
                                 },
                                 selected = isShelterFiltered,
                                 leadingIcon = if (isShelterFiltered) {
