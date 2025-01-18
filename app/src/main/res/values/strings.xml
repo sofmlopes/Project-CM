@@ -7,6 +7,7 @@
     <string name="quantity">Quantity</string>
     <string name="register_shelter">Register Shelter</string>
     <string name="register_medicine">Register Medicine</string>
+    <string name="register_food">Register Food</string>
     <string name="name">Name</string>
     <string name="location">Location</string>
 </resources>

@@ -35,11 +35,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.Shelter
@@ -75,29 +77,6 @@ fun Shelter() {
                 it.location?.contains(searchQuery, ignoreCase = true) ?: false // Match location
     }
 
-    /*
-    val shelterList = listOf(
-        Shelter(
-            name = "Abandoned Warehouse",
-            location = "2.45,7.3",
-            numberOfBeds = 4,
-            occupiedBeds = 1,
-        ),
-        Shelter(
-            name = "Abandoned Warehouse",
-            location = "2.45,7.3",
-            numberOfBeds = 4,
-            occupiedBeds = 1,
-        ),
-        Shelter(
-            name = "Abandoned Warehouse",
-            location = "2.45,7.3",
-            numberOfBeds = 4,
-            occupiedBeds = 1,
-        )
-    )
-    */
-
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
@@ -112,6 +91,20 @@ fun Shelter() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                //horizontalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "SHELTER",
+                    color = colorResource(id = R.color.purple_500),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
             // Search Bar
             TextField(
                 value = searchQuery,
