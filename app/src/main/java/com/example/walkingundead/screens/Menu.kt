@@ -21,19 +21,26 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardElevation
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -90,21 +98,12 @@ fun Menu(currentLocation: LatLng?) {
     var openSOSDialog by remember { mutableStateOf(false) }
     // State to control the visibility of the "Sound Grenade" dialog
     var openSoundGrenadeDialog by remember { mutableStateOf(false) }
+    var isFilterPopupVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        database.getAllMedicines { fetchedMedicines ->
-            medicines = fetchedMedicines
-        }
-    }
-    LaunchedEffect(Unit) {
-        database.getAllShelters { fetchedShelters ->
-            shelterList = fetchedShelters
-        }
-    }
-    LaunchedEffect(Unit) {
-        database.getAllZombies { fetchedReports ->
-            zombieReports = fetchedReports
-        }
+        database.getAllMedicines { fetchedMedicines -> medicines = fetchedMedicines }
+        database.getAllShelters { fetchedShelters -> shelterList = fetchedShelters }
+        database.getAllZombies { fetchedReports -> zombieReports = fetchedReports }
     }
 
     val cameraPositionState = rememberCameraPositionState {
@@ -214,80 +213,6 @@ fun Menu(currentLocation: LatLng?) {
          * Android Developers. (n.d.). Chip. Retrieved January 18, 2025, from
          * https://developer.android.com/develop/ui/compose/components/chip
          */
-        Column{
-            FilterChip(
-                onClick = { isZombiesFiltered = !isZombiesFiltered },
-                label = {
-                    Text("Filter Zombies")
-                },
-                selected = isZombiesFiltered,
-                leadingIcon = if (isZombiesFiltered) {
-                    {
-                        Icon(
-                            imageVector = Icons.Filled.Done,
-                            contentDescription = "Done icon",
-                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                        )
-                    }
-                } else {
-                    null
-                },
-            )
-            FilterChip(
-                onClick = { isMedicineFiltered = !isMedicineFiltered },
-                label = {
-                    Text("Filter Medicine")
-                },
-                selected = isMedicineFiltered,
-                leadingIcon = if (isMedicineFiltered) {
-                    {
-                        Icon(
-                            imageVector = Icons.Filled.Done,
-                            contentDescription = "Done icon",
-                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                        )
-                    }
-                } else {
-                    null
-                },
-            )
-            FilterChip(
-                onClick = { isFoodFiltered = !isFoodFiltered },
-                label = {
-                    Text("Filter Food")
-                },
-                selected = isFoodFiltered,
-                leadingIcon = if (isFoodFiltered) {
-                    {
-                        Icon(
-                            imageVector = Icons.Filled.Done,
-                            contentDescription = "Done icon",
-                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                        )
-                    }
-                } else {
-                    null
-                },
-            )
-            FilterChip(
-                onClick = { isShelterFiltered = !isShelterFiltered },
-                label = {
-                    Text("Filter Shelters")
-                },
-                selected = isShelterFiltered,
-                leadingIcon = if (isShelterFiltered) {
-                    {
-                        Icon(
-                            imageVector = Icons.Filled.Done,
-                            contentDescription = "Done icon",
-                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                        )
-                    }
-                } else {
-                    null
-                },
-            )
-        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -349,6 +274,9 @@ fun Menu(currentLocation: LatLng?) {
                 )
             }
             // The main menu UI
+            IconButton(onClick = { isFilterPopupVisible = true }) {
+                Icon(imageVector = Icons.Default.FilterList, contentDescription = "Filter")
+            }
             ElevatedButton(onClick = { openSoundGrenadeDialog = true }) {
                 Text("Sound Grenade")
             }
@@ -381,6 +309,110 @@ fun Menu(currentLocation: LatLng?) {
                         openSoundGrenadeDialog = false
                     }
                 )
+            }
+            if (isFilterPopupVisible) {
+                Dialog(
+                    onDismissRequest = {
+                        isFilterPopupVisible = false
+                    }
+                ) {
+                    Card(
+                        modifier = Modifier.padding(16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Column(
+                            Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Filters",
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            FilterChip(
+                                onClick = { isZombiesFiltered = !isZombiesFiltered },
+                                label = {
+                                    Text("Filter Zombies")
+                                },
+                                selected = isZombiesFiltered,
+                                leadingIcon = if (isZombiesFiltered) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Filled.Done,
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
+                            )
+                            FilterChip(
+                                onClick = { isMedicineFiltered = !isMedicineFiltered },
+                                label = {
+                                    Text("Filter Medicine")
+                                },
+                                selected = isMedicineFiltered,
+                                leadingIcon = if (isMedicineFiltered) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Filled.Done,
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
+                            )
+                            FilterChip(
+                                onClick = { isFoodFiltered = !isFoodFiltered },
+                                label = {
+                                    Text("Filter Food")
+                                },
+                                selected = isFoodFiltered,
+                                leadingIcon = if (isFoodFiltered) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Filled.Done,
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
+                            )
+                            FilterChip(
+                                onClick = { isShelterFiltered = !isShelterFiltered },
+                                label = {
+                                    Text("Filter Shelters")
+                                },
+                                selected = isShelterFiltered,
+                                leadingIcon = if (isShelterFiltered) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Filled.Done,
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(onClick = { isFilterPopupVisible = false }) {
+                                Text("Close")
+                            }
+                        }
+                    }
+                }
             }
         }
     }
