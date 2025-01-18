@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.media.ToneGenerator
 import android.net.Uri
 import android.os.Build
@@ -27,15 +28,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -52,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -77,6 +74,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+
 
 private const val REQUEST_CALL_PERMISSION = 1
 
@@ -295,15 +293,23 @@ fun Menu(currentLocation: LatLng?) {
                         // Get AudioManager instance
                         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-                        // Set the volume to max for the desired stream
-                        audioManager.adjustStreamVolume(
+                        // Set the alarm stream volume to maximum
+                        audioManager.setStreamVolume(
                             AudioManager.STREAM_ALARM,
-                            AudioManager.ADJUST_RAISE,
+                            audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM),
                             AudioManager.FLAG_PLAY_SOUND
                         )
 
-                        val tone = ToneGenerator(AudioManager.MODE_RINGTONE, 500)
-                        tone.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT, 10000)
+                        // Create a new MediaPlayer instance for each playback
+                        val mediaPlayer = MediaPlayer.create(context, R.raw.sound) // Replace with your file name in res/raw
+
+                        // Start playing the sound
+                        mediaPlayer.start()
+
+                        // Release MediaPlayer resources once the playback is complete
+                        mediaPlayer.setOnCompletionListener {
+                            mediaPlayer.release()  // Release the media player after it's done
+                        }
 
                         // Close the dialog
                         openSoundGrenadeDialog = false
