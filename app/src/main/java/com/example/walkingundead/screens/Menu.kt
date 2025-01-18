@@ -485,7 +485,7 @@ fun SOSDialog(onNo: () -> Unit,  onYes: (Context,String) -> Unit) {
                     painter = painterResource(id = R.drawable.sos_icon),
                     contentDescription = "SOS icon in SOS dialog",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(100.dp)
+                    modifier = Modifier.height(50.dp)
                 )
                 Text(
                     text = "Are you sure you want to share \n" +
