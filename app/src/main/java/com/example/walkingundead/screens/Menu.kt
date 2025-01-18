@@ -322,7 +322,7 @@ fun Menu(currentLocation: LatLng?) {
                         )
 
                         // Create a new MediaPlayer instance for each playback
-                        val mediaPlayer = MediaPlayer.create(context, R.raw.sound) // Replace with your file name in res/raw
+                        val mediaPlayer = MediaPlayer.create(context, R.raw.loud_emergency_alarm) // Replace with your file name in res/raw
 
                         // Start playing the sound
                         mediaPlayer.start()
