@@ -47,18 +47,30 @@ import com.google.firebase.auth.auth
 fun SkillsPickerScreen() {
     // State for the list of skills and the new skill input
     var newSkill by remember { mutableStateOf("") }
-    val defaultSkillsList = remember { mutableStateListOf("First Aid", "CPR", "Trauma Treatment & Bleeding",
-        "Water Safety", "Shelter Building", "Foraging and Hunting",
-        "Water Purification", "Navigation", "Signaling",
-        "Knot Tying", "Cooking", "Crafting", "Fighting") }
+    val defaultSkillsList = remember {
+        mutableStateListOf(
+            "First Aid", "CPR", "Trauma Treatment & Bleeding",
+            "Water Safety", "Shelter Building", "Foraging and Hunting",
+            "Water Purification", "Navigation", "Signaling",
+            "Knot Tying", "Cooking", "Crafting", "Fighting"
+        )
+    }
+
     var selectedSkillsList by remember { mutableStateOf<List<Skill>>(emptyList()) }
     val database = RepositoryProvider.databaseRepository
 
     val currentEmail = Firebase.auth.currentUser?.email ?: "Unknown"
 
     LaunchedEffect(Unit) {
-        database.getProfileSkills(currentEmail) {
-            fetchedSkills -> selectedSkillsList = fetchedSkills
+        database.getProfileSkills(currentEmail) { fetchedSkills ->
+            selectedSkillsList = fetchedSkills
+
+            // Add missing skills to defaultSkillsList
+            fetchedSkills.forEach { skill ->
+                if (!defaultSkillsList.contains(skill.name)) {
+                    defaultSkillsList.add(skill.name?: "") // Add the skill to defaultSkillsList if not already present
+                }
+            }
         }
     }
 
@@ -147,7 +159,7 @@ fun SkillsPickerScreen() {
 
         Button(
             onClick = {
-                // Fetch skills from Firebase and then proceed to add selected skills
+                // Fetch skills from Firebase and then proceed to add/remove selected skills
                 database.getProfileSkills(currentEmail) { existingSkills ->
                     // Loop through selected skills and add each to Firebase using addNewSkill
                     selectedSkillsList.forEach { skill ->
@@ -159,6 +171,14 @@ fun SkillsPickerScreen() {
                         // If the skill doesn't exist in the Firebase database, add it
                         if (!skillExists) {
                             database.addSkillToProfile(currentEmail, Skill(name = skillName))
+                        }
+                    }
+
+                    // Remove unselected skills from the profile
+                    existingSkills.forEach { existingSkill ->
+                        if (selectedSkillsList.none { it.name == existingSkill.name }) {
+                            // If the skill is not selected, remove it from the profile
+                            database.removeSkillFromProfile(currentEmail, existingSkill)
                         }
                     }
                 }

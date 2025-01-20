@@ -65,7 +65,7 @@ class DatabaseService {
                     val skills = mutableListOf<Skill>()
                     for (data in snapshot.children) {
                         val profile = data.getValue(Profile::class.java)
-                        if (profile != null && profile.skills!!.isNotEmpty()) {
+                        if (profile != null && profile.skills.isNotEmpty()) {
                             skills.addAll(profile.skills!!)
                         }
                     }
@@ -100,6 +100,46 @@ class DatabaseService {
                                     }
                                     .addOnFailureListener { exception ->
                                         Log.e("FirebaseUpdate", "Failed to add skill to profile", exception)
+                                    }
+                                return // Exit loop after updating the first matching profile
+                            }
+                        }
+                    } else {
+                        Log.e("FirebaseError", "No profile found with email $email")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error querying profile with email $email", error.toException())
+                }
+            })
+    }
+
+    fun removeSkillFromProfile(email: String, skill: Skill) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (data in snapshot.children) {
+                            val profile = data.getValue(Profile::class.java)
+                            val profileKey = data.key
+                            if (profile != null && profileKey != null) {
+                                // Remove the skill from the skills list
+                                val updatedSkills = profile.skills.toMutableList()
+                                updatedSkills.removeIf { it.name == skill.name }
+
+                                // Update the profile with the new list of skills
+                                val updatedProfile = profile.copy(skills = updatedSkills)
+
+                                // Update the profile in the database
+                                dbReference.child(profileKey).setValue(updatedProfile)
+                                    .addOnSuccessListener {
+                                        Log.d("FirebaseUpdate", "Successfully removed skill from profile")
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.e("FirebaseUpdate", "Failed to remove skill from profile", exception)
                                     }
                                 return // Exit loop after updating the first matching profile
                             }
