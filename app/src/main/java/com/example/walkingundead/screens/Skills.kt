@@ -54,8 +54,12 @@ fun SkillsPickerScreen() {
     var selectedSkillsList by remember { mutableStateOf<List<Skill>>(emptyList()) }
     val database = RepositoryProvider.databaseRepository
 
+    val currentEmail = Firebase.auth.currentUser?.email ?: "Unknown"
+
     LaunchedEffect(Unit) {
-        database.getAllSkills { fetchedSkills -> selectedSkillsList = fetchedSkills }
+        database.getProfileSkills(currentEmail) {
+            fetchedSkills -> selectedSkillsList = fetchedSkills
+        }
     }
 
     Column(
@@ -83,7 +87,6 @@ fun SkillsPickerScreen() {
                         if (selected) {
                             val newSkill = Skill(
                                 name = skillName,
-                                emailRegisteredBy = Firebase.auth.currentUser?.email ?: "Unknown"
                             )
                             selectedSkillsList = selectedSkillsList + newSkill
                         } else {
@@ -145,7 +148,7 @@ fun SkillsPickerScreen() {
         Button(
             onClick = {
                 // Fetch skills from Firebase and then proceed to add selected skills
-                database.getAllSkills { existingSkills ->
+                database.getProfileSkills(currentEmail) { existingSkills ->
                     // Loop through selected skills and add each to Firebase using addNewSkill
                     selectedSkillsList.forEach { skill ->
                         val skillName = skill.name ?: ""
@@ -155,7 +158,7 @@ fun SkillsPickerScreen() {
 
                         // If the skill doesn't exist in the Firebase database, add it
                         if (!skillExists) {
-                            database.addNewSkill(skillName)
+                            database.addSkillToProfile(currentEmail, Skill(name = skillName))
                         }
                     }
                 }

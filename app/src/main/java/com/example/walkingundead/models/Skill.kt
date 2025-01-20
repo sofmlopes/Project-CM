@@ -1,7 +1,6 @@
 package com.example.walkingundead.models
 
 data class Skill (
-    var id: String? = "",
+    var id: Int? = 0,
     var name: String? = null,
-    var emailRegisteredBy: String = ""
 )

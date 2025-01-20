@@ -54,6 +54,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Profile
+import com.example.walkingundead.models.Skill
 import com.example.walkingundead.provider.RepositoryProvider
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -63,19 +64,7 @@ import com.google.maps.android.compose.MarkerState
 fun Profiles() {
     val database = RepositoryProvider.databaseRepository
 
-    val profiles = mutableListOf(
-        Profile(12, "maria", "as"),
-        Profile(13, "joao", "we"),
-        Profile(15, "primo", "wa")
-    )
-
-    // Example of adding sample profiles
-    profiles.add(Profile(id = 1, name = "John Doe", email = "john.doe@example.com"))
-    profiles.add(Profile(id = 2, name = "Jane Smith", email = "jane.smith@example.com"))
-    profiles.add(Profile(id = 3, name = "Alice Brown", email = "alice.brown@example.com"))
-
-
-
+    var profiles = mutableListOf(Profile())
 
     var searchQuery by remember { mutableStateOf("") }
 

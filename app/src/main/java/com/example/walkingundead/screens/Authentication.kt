@@ -38,6 +38,8 @@ import com.example.walkingundead.R
 import com.example.walkingundead.models.Skill
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
 @Composable
@@ -53,7 +55,9 @@ fun Authentication() {
     val database = RepositoryProvider.databaseRepository
 
     LaunchedEffect(Unit) {
-        database.getAllSkills { fetchedSkills -> selectedSkillsList = fetchedSkills }
+        database.getProfileSkills(Firebase.auth.currentUser?.email ?: "Unknown") {
+                fetchedSkills -> selectedSkillsList = fetchedSkills
+        }
     }
 
     Box(
@@ -216,6 +220,7 @@ fun Authentication() {
                             scope.launch {
                                 try {
                                     authRepository.register(email, password)
+                                    database.addNewProfileEntry(name = "nsei", email = email, skills = mutableListOf())
 
                                     if (authRepository.isAuthenticated()) {
                                         authenticated = true

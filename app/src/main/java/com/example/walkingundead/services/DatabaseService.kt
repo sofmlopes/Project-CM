@@ -3,6 +3,7 @@ package com.example.walkingundead.services
 import android.util.Log
 import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
+import com.example.walkingundead.models.Profile
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.models.Skill
@@ -15,6 +16,121 @@ import com.google.firebase.ktx.Firebase
 
 class DatabaseService {
 
+    fun addNewProfileEntry(name: String, email: String, skills: MutableList<Skill>) {
+        val profileEntry = Profile(
+            name = name,
+            email = email,
+            skills = skills
+        )
+
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.push().setValue(profileEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpload", "Added profile entry to database")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpload", "Failed to add profile entry to database", exception)
+            }
+    }
+
+    fun getAllProfiles(listener: (List<Profile>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val profiles = mutableListOf<Profile>()
+                for (data in snapshot.children) {
+                    val profile = data.getValue(Profile::class.java)
+                    val id = data.key?.toIntOrNull()
+                    if (profile != null) {
+                        profile.id = id
+                        profiles.add(profile)
+                    }
+                }
+                listener(profiles) // Send the updated list to the listener
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching profiles", error.toException())
+            }
+        })
+    }
+
+    fun getProfileSkills(email: String, listener: (List<Skill>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val skills = mutableListOf<Skill>()
+                    for (data in snapshot.children) {
+                        val profile = data.getValue(Profile::class.java)
+                        if (profile != null && profile.skills!!.isNotEmpty()) {
+                            skills.addAll(profile.skills!!)
+                        }
+                    }
+                    listener(skills) // Send the updated list of skills to the listener
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error fetching skills for profile with email $email", error.toException())
+                }
+            })
+    }
+
+    fun addSkillToProfile(email: String, skill: Skill) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (data in snapshot.children) {
+                            val profile = data.getValue(Profile::class.java)
+                            val profileKey = data.key
+                            if (profile != null && profileKey != null) {
+                                val updatedSkills = profile.skills!!.toMutableList()
+                                updatedSkills.add(skill)
+                                val updatedProfile = profile.copy(skills = updatedSkills)
+
+                                // Update the profile in the database
+                                dbReference.child(profileKey).setValue(updatedProfile)
+                                    .addOnSuccessListener {
+                                        Log.d("FirebaseUpdate", "Successfully added skill to profile")
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.e("FirebaseUpdate", "Failed to add skill to profile", exception)
+                                    }
+                                return // Exit loop after updating the first matching profile
+                            }
+                        }
+                    } else {
+                        Log.e("FirebaseError", "No profile found with email $email")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error querying profile with email $email", error.toException())
+                }
+            })
+    }
+
+
+
+    fun editProfileEntry(id: Int, updatedEntry: Profile) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles").child(id.toString())
+
+        dbReference.setValue(updatedEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpdate", "Successfully updated profile entry")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpdate", "Failed to update profile entry", exception)
+            }
+    }
+
+    /*
     fun addNewSkill(name: String) {
         val skill = Skill(
             name = name,
@@ -42,7 +158,6 @@ class DatabaseService {
                     val skill = data.getValue(Skill::class.java)
                     val id = data.key
                     if (skill != null && id != null) {
-                        skill.id = id
                         skills.add(skill)
                     }
                 }
@@ -66,6 +181,7 @@ class DatabaseService {
                 Log.e("FirebaseUpdate", "Failed to update skill entry", exception)
             }
     }
+    */
 
     fun addNewMedicineEntry(name: String, type: String, location: String, quantity: Int) {
         val medicineEntry = MedicineEntry(
