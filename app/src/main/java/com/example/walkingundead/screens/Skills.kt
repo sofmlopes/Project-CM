@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,14 +37,26 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.walkingundead.models.Skill
+import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.ui.theme.WalkingUnDeadTheme
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @Composable
 fun SkillsPickerScreen() {
     // State for the list of skills and the new skill input
     var newSkill by remember { mutableStateOf("") }
-    val skillsList = remember { mutableStateListOf("Cooking", "Crafting", "Fighting", "Navigation") }
-    val selectedSkills = remember { mutableStateListOf<String>() }
+    val defaultSkillsList = remember { mutableStateListOf("First Aid", "CPR", "Trauma Treatment & Bleeding",
+        "Water Safety", "Shelter Building", "Foraging and Hunting",
+        "Water Purification", "Navigation", "Signaling",
+        "Knot Tying", "Cooking", "Crafting", "Fighting") }
+    var selectedSkillsList by remember { mutableStateOf<List<Skill>>(emptyList()) }
+    val database = RepositoryProvider.databaseRepository
+
+    LaunchedEffect(Unit) {
+        database.getAllSkills { fetchedSkills -> selectedSkillsList = fetchedSkills }
+    }
 
     Column(
         modifier = Modifier
@@ -62,12 +75,20 @@ fun SkillsPickerScreen() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(skillsList) { skill ->
+            items(defaultSkillsList) { skillName ->
                 SkillChip(
-                    skill = skill,
-                    isSelected = selectedSkills.contains(skill),
+                    skill = skillName,
+                    isSelected = selectedSkillsList.any { it.name == skillName },
                     onSelect = { selected ->
-                        if (selected) selectedSkills.add(skill) else selectedSkills.remove(skill)
+                        if (selected) {
+                            val newSkill = Skill(
+                                name = skillName,
+                                emailRegisteredBy = Firebase.auth.currentUser?.email ?: "Unknown"
+                            )
+                            selectedSkillsList = selectedSkillsList + newSkill
+                        } else {
+                            selectedSkillsList = selectedSkillsList.filter { it.name != skillName }
+                        }
                     }
                 )
             }
@@ -101,16 +122,16 @@ fun SkillsPickerScreen() {
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {
-                    if (newSkill.isNotEmpty() && !skillsList.contains(newSkill)) {
-                        skillsList.add(newSkill)
+                    if (newSkill.isNotEmpty() && !defaultSkillsList.contains(newSkill)) {
+                        defaultSkillsList.add(newSkill)
                         newSkill = ""
                     }
                 })
             )
             Button(
                 onClick = {
-                    if (newSkill.isNotEmpty() && !skillsList.contains(newSkill)) {
-                        skillsList.add(newSkill)
+                    if (newSkill.isNotEmpty() && !defaultSkillsList.contains(newSkill)) {
+                        defaultSkillsList.add(newSkill)
                         newSkill = ""
                     }
                 }
@@ -123,13 +144,28 @@ fun SkillsPickerScreen() {
 
         Button(
             onClick = {
-                // Save skills logic here
+                // Fetch skills from Firebase and then proceed to add selected skills
+                database.getAllSkills { existingSkills ->
+                    // Loop through selected skills and add each to Firebase using addNewSkill
+                    selectedSkillsList.forEach { skill ->
+                        val skillName = skill.name ?: ""
+
+                        // Check if there are any existing skills in the database
+                        val skillExists = existingSkills.any { it.name == skillName }
+
+                        // If the skill doesn't exist in the Firebase database, add it
+                        if (!skillExists) {
+                            database.addNewSkill(skillName)
+                        }
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text("Save Skills", color = Color.White)
         }
+
     }
 }
 

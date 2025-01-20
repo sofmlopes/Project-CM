@@ -42,7 +42,4 @@ class AuthenticationService() {
     fun getEmail(): String {
         return Firebase.auth.currentUser?.email as String
     }
-
-    //mariajoaquina@gmail.com
-    //123123
 }

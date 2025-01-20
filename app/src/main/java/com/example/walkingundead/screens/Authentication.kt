@@ -13,6 +13,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.walkingundead.R
+import com.example.walkingundead.models.Skill
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
 import kotlinx.coroutines.launch
@@ -42,18 +44,17 @@ import kotlinx.coroutines.launch
 fun Authentication() {
     val authRepository = remember { RepositoryProvider.authRepository }
     val navController = remember { RepositoryProvider.navController }
-
     val scope = rememberCoroutineScope()
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-
     var authenticated by remember { mutableStateOf(authRepository.isAuthenticated()) }
+    var selectedSkillsList by remember { mutableStateOf<List<Skill>>(emptyList()) }
+    val database = RepositoryProvider.databaseRepository
 
-    // Skills-related state
-    val skillsList = remember { mutableStateListOf("Cooking", "Crafting", "Fighting", "Navigation") }
-    val selectedSkills = remember { mutableStateListOf<String>() }
+    LaunchedEffect(Unit) {
+        database.getAllSkills { fetchedSkills -> selectedSkillsList = fetchedSkills }
+    }
 
     Box(
         modifier = Modifier
@@ -96,7 +97,7 @@ fun Authentication() {
 
                 // Display selected skills
                 Text(
-                    text = "Selected Skills: ${selectedSkills.joinToString(", ")}",
+                    text = "Selected Skills: ${selectedSkillsList.joinToString(", ") { it.name ?: "Unnamed" }}",
                     style = TextStyle(fontSize = 16.sp)
                 )
 
@@ -234,18 +235,6 @@ fun Authentication() {
             }
 
             Spacer(Modifier.height(50.dp))
-
-            /*
-            if (authenticated) {
-                Text(
-                    text = "Authenticated successfully! 😊"
-                )
-            } else {
-                Text(
-                    text = "Authentication failed 🥲"
-                )
-            }
-            */
         }
     }
 }

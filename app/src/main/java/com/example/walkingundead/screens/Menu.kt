@@ -161,7 +161,7 @@ fun Menu(currentLocation: LatLng?) {
                             val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
                             Marker(
                                 state = markerState,
-                                title = "Medicine: ${food.name}",
+                                title = "Food: ${food.name}",
                                 snippet = "Quantity: ${food.quantity}",
                                 icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                             )

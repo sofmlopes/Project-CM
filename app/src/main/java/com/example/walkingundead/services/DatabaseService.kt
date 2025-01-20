@@ -1,12 +1,11 @@
 package com.example.walkingundead.services
 
 import android.util.Log
-import com.example.walkingundead.R
 import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
-import com.google.firebase.auth.FirebaseAuth
+import com.example.walkingundead.models.Skill
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -16,45 +15,55 @@ import com.google.firebase.ktx.Firebase
 
 class DatabaseService {
 
+    fun addNewSkill(name: String) {
+        val skill = Skill(
+            name = name,
+            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
+        )
 
-    // Function to get the current user's ID (assumes Firebase Authentication is used)
-    fun getUserId(): String? {
-        val user = FirebaseAuth.getInstance().currentUser
-        return user?.uid
-    }
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Skills")
 
-    // Function to save selected skills to Firebase Realtime Database
-    fun saveSkillsToFirebase(selectedSkills: List<String>, userId: String) {
-        val database = FirebaseDatabase.getInstance()
-        val userSkillsRef = database.getReference("users/$userId/selectedSkills")
-
-        // Save the selected skills to the Realtime Database
-        userSkillsRef.setValue(selectedSkills)
+        dbReference.push().setValue(skill)
             .addOnSuccessListener {
-                // Successfully saved the skills
-                Log.d("RealtimeDatabase", "Skills saved successfully")
+                Log.d("FirebaseUpload", "Added skill entry to database")
             }
-            .addOnFailureListener { e ->
-                // Error occurred while saving the skills
-                Log.w("RealtimeDatabase", "Error saving skills", e)
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpload", "Failed to add skill entry to database", exception)
             }
     }
 
-    // Function to retrieve selected skills from Firebase Realtime Database
-    fun getSkillsFromFirebase(userId: String, onSkillsLoaded: (List<String>) -> Unit) {
-        val database = FirebaseDatabase.getInstance()
-        val userSkillsRef = database.getReference("users/$userId/selectedSkills")
+    fun getAllSkills(listener: (List<Skill>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Skills")
 
-        // Retrieve the selected skills from Realtime Database
-        userSkillsRef.get()
-            .addOnSuccessListener { snapshot ->
-                val skills = snapshot.getValue(List::class.java) as? List<String> ?: emptyList()
-                onSkillsLoaded(skills)
+        dbReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val skills = mutableListOf<Skill>()
+                for (data in snapshot.children) {
+                    val skill = data.getValue(Skill::class.java)
+                    val id = data.key
+                    if (skill != null && id != null) {
+                        skill.id = id
+                        skills.add(skill)
+                    }
+                }
+                listener(skills)  // Send the updated list to the listener
             }
-            .addOnFailureListener { e ->
-                // Error occurred while retrieving the skills
-                Log.w("RealtimeDatabase", "Error getting skills", e)
-                onSkillsLoaded(emptyList())
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching skills", error.toException())
+            }
+        })
+    }
+
+    fun editSkill(id: String, updatedEntry: Skill) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Skills").child(id)
+
+        dbReference.setValue(updatedEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpdate", "Successfully updated skill entry")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpdate", "Failed to update skill entry", exception)
             }
     }
 
@@ -67,7 +76,7 @@ class DatabaseService {
             emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
         )
 
-        val dbReference = FirebaseDatabase.getInstance().reference.child("medicine")
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Medicines")
 
         dbReference.push().setValue(medicineEntry)
             .addOnSuccessListener {
@@ -79,7 +88,7 @@ class DatabaseService {
     }
 
     fun getAllMedicines(listener: (List<MedicineEntry>) -> Unit) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("medicine")
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Medicines")
 
         dbReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -102,7 +111,7 @@ class DatabaseService {
     }
 
     fun editMedicineEntry(id: String, updatedEntry: MedicineEntry) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("medicine").child(id)
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Medicines").child(id)
 
         dbReference.setValue(updatedEntry)
             .addOnSuccessListener {
@@ -114,7 +123,7 @@ class DatabaseService {
     }
 
     fun deleteMedicineEntry(id: String) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("medicine").child(id)
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Medicines").child(id)
 
         dbReference.removeValue()
             .addOnSuccessListener {
@@ -134,7 +143,7 @@ class DatabaseService {
             emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
         )
 
-        val dbReference = FirebaseDatabase.getInstance().reference.child("shelter")
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Shelters")
 
         dbReference.push().setValue(shelter)
             .addOnSuccessListener {
@@ -146,7 +155,7 @@ class DatabaseService {
     }
 
     fun getAllShelters(listener: (List<Shelter>) -> Unit) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("shelter")
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Shelters")
 
         dbReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -163,7 +172,7 @@ class DatabaseService {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseError", "Error fetching medicines", error.toException())
+                Log.e("FirebaseError", "Error fetching shelters", error.toException())
             }
         })
     }
@@ -209,8 +218,28 @@ class DatabaseService {
 
     }
 
-    fun getAllFoods(listener: (List<Food>) -> Unit) {
+    fun addNewFoodEntry(name: String, type: String, location: String, quantity: Int) {
+        val foodEntry = Food(
+            name = name,
+            type = type,
+            location = location,
+            quantity = quantity,
+            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
+        )
+
         val dbReference = FirebaseDatabase.getInstance().reference.child("Food")
+
+        dbReference.push().setValue(foodEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpload", "Added food entry to database")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpload", "Failed to add food entry to database", exception)
+            }
+    }
+
+    fun getAllFoods(listener: (List<Food>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Foods")
 
         dbReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -233,7 +262,7 @@ class DatabaseService {
     }
 
     fun editFoodEntry(id: String, updatedEntry: Food) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Food").child(id)
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Foods").child(id)
 
         dbReference.setValue(updatedEntry)
             .addOnSuccessListener {
@@ -245,7 +274,7 @@ class DatabaseService {
     }
 
     fun deleteFoodEntry(id: String) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Food").child(id)
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Foods").child(id)
 
         dbReference.removeValue()
             .addOnSuccessListener {
@@ -253,26 +282,6 @@ class DatabaseService {
             }
             .addOnFailureListener { exception ->
                 Log.e("FirebaseDelete", "Failed to delete food entry with ID: $id", exception)
-            }
-    }
-
-    fun addNewFoodEntry(name: String, type: String, location: String, quantity: Int) {
-        val foodEntry = Food(
-            name = name,
-            type = type,
-            location = location,
-            quantity = quantity,
-            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
-        )
-
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Food")
-
-        dbReference.push().setValue(foodEntry)
-            .addOnSuccessListener {
-                Log.d("FirebaseUpload", "Added food entry to database")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("FirebaseUpload", "Failed to add food entry to database", exception)
             }
     }
 }
