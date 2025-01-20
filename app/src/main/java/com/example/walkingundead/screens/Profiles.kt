@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -64,13 +65,20 @@ import com.google.maps.android.compose.MarkerState
 fun Profiles() {
     val database = RepositoryProvider.databaseRepository
 
-    var profiles = mutableListOf(Profile())
+
+    var profiles by remember { mutableStateOf<List<Profile>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        database.getAllProfiles { fetchedProfiles ->
+            profiles = fetchedProfiles
+        }
+    }
 
     var searchQuery by remember { mutableStateOf("") }
 
     // Filter medicines based on the search query
     val filteredProfiles = profiles.filter {
-        it.name?.contains(searchQuery, ignoreCase = true) ?: false
+        it.email?.contains(searchQuery, ignoreCase = true) ?: false
     }
 
     val scrollState = rememberScrollState()
@@ -176,33 +184,49 @@ fun ProfileItem(profile: Profile) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp) //5dp = vertical space between cards
+            .padding(vertical = 5.dp) // 5dp vertical space between cards
             .background(Color.White, RoundedCornerShape(8.dp)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        //Name and Category
+        // Name and Skills
         Column(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 10.dp, vertical = 20.dp)
         ) {
+            // Display the email
             Text(
-                text = profile.name?:"",
+                text = profile.email ?: "",
                 fontWeight = FontWeight.Bold,
                 style = TextStyle(color = Color.Black)
             )
-            //todo show skills
+
+            Spacer(modifier = Modifier.height(8.dp)) // Spacing between email and skills
+
+            // Display skills
+            if (profile.skills.isEmpty()) {
+                Text(
+                    text = "No skills available",
+                    style = TextStyle(color = Color.Gray)
+                )
+            } else {
+                profile.skills.forEach { skill ->
+                    Text(
+                        text = "- ${skill.name}",
+                        style = TextStyle(color = Color.DarkGray, fontSize = 14.sp)
+                    )
+                }
+            }
         }
 
-        // Dialog content
+        // Dialog content (optional, for additional functionality)
         if (isDialogVisible) {
             Dialog(
                 onDismissRequest = {
                     isDialogVisible = false
                 } // Closes the dialog when the background is tapped
             ) {
-                // Pop-up content
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -211,7 +235,7 @@ fun ProfileItem(profile: Profile) {
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    //pop up to contact person
+                    // Pop-up to contact person or show more info
                 }
             }
         }

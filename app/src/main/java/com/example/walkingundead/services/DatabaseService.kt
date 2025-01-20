@@ -18,7 +18,6 @@ class DatabaseService {
 
     fun addNewProfileEntry(name: String, email: String, skills: MutableList<Skill>) {
         val profileEntry = Profile(
-            name = name,
             email = email,
             skills = skills
         )
