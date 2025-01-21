@@ -1,4 +1,4 @@
-package com.example.walkingundead.screens
+package com.example.walkingundead.utilities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

@@ -67,6 +67,10 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.AlertDetails
+import com.example.walkingundead.utilities.isZombieNear
+import com.example.walkingundead.utilities.parseLocation
+import com.example.walkingundead.utilities.scaleBitmap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -75,13 +79,13 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
-
 private const val REQUEST_CALL_PERMISSION = 1
 
 @Composable
 fun Menu(currentLocation: LatLng?) {
 
     val database = RepositoryProvider.databaseRepository
+
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
     var foods by remember { mutableStateOf<List<Food>>(emptyList()) }
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
@@ -182,7 +186,7 @@ fun Menu(currentLocation: LatLng?) {
                                 state = markerState,
                                 title = "Shelter: ${shelter.name}",
                                 snippet = "Capacity: ${shelter.numberOfBeds}",
-                                icon = BitmapDescriptorFactory.fromBitmap(bitmap),
+                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap),
                             )
                         }
                     }
@@ -644,24 +648,6 @@ fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
     }
 }
 
-// Helper function to parse location strings into LatLng objects
-fun parseLocation(location: String?): LatLng? {
-    return try {
-        val parts = location!!.split(",")
-        val lat = parts[0].toDouble()
-        val lng = parts[1].toDouble()
-        LatLng(lat, lng)
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
-
-// Function to scale the bitmap to a fixed size
-fun scaleBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap {
-    return Bitmap.createScaledBitmap(bitmap, width, height, false)
-}
-
 /**
  * Android Developers. (n.d.). Build a notification. Google. Retrieved January 15, 2025,
  * from https://developer.android.com/develop/ui/views/notifications/build-notification?hl=pt-br
@@ -710,18 +696,4 @@ fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, c
     }
 }
 
-/**
- * Function to calculate if a zombie is within range of the user (3 km)
- */
-fun isZombieNear(userLocation: LatLng, zombieLocation: LatLng, rangeInMeters: Float): Boolean {
-    val location1 = Location("current")
-    location1.latitude = userLocation.latitude
-    location1.longitude = userLocation.longitude
 
-    val location2 = Location("zombie")
-    location2.latitude = zombieLocation.latitude
-    location2.longitude = zombieLocation.longitude
-
-    val distance = location1.distanceTo(location2)  // Distance in meters
-    return distance <= rangeInMeters
-}
