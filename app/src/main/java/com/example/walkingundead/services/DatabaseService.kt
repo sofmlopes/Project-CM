@@ -1,6 +1,7 @@
 package com.example.walkingundead.services
 
 import android.util.Log
+import com.example.walkingundead.models.Contact
 import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Profile
@@ -155,7 +156,64 @@ class DatabaseService {
             })
     }
 
+    fun getProfileContacts(email: String, listener: (List<Contact>) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
+        dbReference.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val contacts = mutableListOf<Contact>()
+                    for (data in snapshot.children) {
+                        val profile = data.getValue(Profile::class.java)
+                        if (profile != null && profile.skills.isNotEmpty()) {
+                            contacts.addAll(profile.contacts)
+                        }
+                    }
+                    listener(contacts) // Send the updated list of skills to the listener
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error fetching contacts for profile with email $email", error.toException())
+                }
+            })
+    }
+
+    fun addContactToProfile(email: String, contact: Contact) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (data in snapshot.children) {
+                            val profile = data.getValue(Profile::class.java)
+                            val profileKey = data.key
+                            if (profile != null && profileKey != null) {
+                                val updatedContacts = profile.contacts.toMutableList()
+                                updatedContacts.add(contact)
+                                val updatedProfile = profile.copy(contacts = updatedContacts)
+
+                                // Update the profile in the database
+                                dbReference.child(profileKey).setValue(updatedProfile)
+                                    .addOnSuccessListener {
+                                        Log.d("FirebaseUpdate", "Successfully added contact to profile")
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.e("FirebaseUpdate", "Failed to add contact to profile", exception)
+                                    }
+                                return // Exit loop after updating the first matching profile
+                            }
+                        }
+                    } else {
+                        Log.e("FirebaseError", "No profile found with email $email")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error querying profile with email $email", error.toException())
+                }
+            })
+    }
 
     fun editProfileEntry(id: Int, updatedEntry: Profile) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles").child(id.toString())
