@@ -14,6 +14,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import java.time.LocalDate
 
 class DatabaseService {
 
@@ -227,59 +228,6 @@ class DatabaseService {
             }
     }
 
-    /*
-    fun addNewSkill(name: String) {
-        val skill = Skill(
-            name = name,
-            emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
-        )
-
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Skills")
-
-        dbReference.push().setValue(skill)
-            .addOnSuccessListener {
-                Log.d("FirebaseUpload", "Added skill entry to database")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("FirebaseUpload", "Failed to add skill entry to database", exception)
-            }
-    }
-
-    fun getAllSkills(listener: (List<Skill>) -> Unit) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Skills")
-
-        dbReference.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val skills = mutableListOf<Skill>()
-                for (data in snapshot.children) {
-                    val skill = data.getValue(Skill::class.java)
-                    val id = data.key
-                    if (skill != null && id != null) {
-                        skills.add(skill)
-                    }
-                }
-                listener(skills)  // Send the updated list to the listener
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseError", "Error fetching skills", error.toException())
-            }
-        })
-    }
-
-    fun editSkill(id: String, updatedEntry: Skill) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Skills").child(id)
-
-        dbReference.setValue(updatedEntry)
-            .addOnSuccessListener {
-                Log.d("FirebaseUpdate", "Successfully updated skill entry")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("FirebaseUpdate", "Failed to update skill entry", exception)
-            }
-    }
-    */
-
     fun addNewMedicineEntry(name: String, type: String, location: String, quantity: Int) {
         val medicineEntry = MedicineEntry(
             name = name,
@@ -431,12 +379,13 @@ class DatabaseService {
 
     }
 
-    fun addNewFoodEntry(name: String, type: String, location: String, quantity: Int) {
+    fun addNewFoodEntry(name: String, type: String, location: String, quantity: Int, expirationDate : String) {
         val foodEntry = Food(
             name = name,
             type = type,
             location = location,
             quantity = quantity,
+            expirationDate = expirationDate,
             emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
         )
 

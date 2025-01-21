@@ -118,7 +118,7 @@ fun Medicine() {
             false  // If there's an error converting to int, return false
         }
 
-        matchesName || matchesType || matchesLocation
+        matchesName || matchesType || matchesLocation || matchesQuantity
     }
     // Sort medicines after filtering
     val sortedMedicines = when (sortBy) {
@@ -156,6 +156,9 @@ fun Medicine() {
                     modifier = Modifier.padding(vertical = 10.dp),
                 )
             }
+            /**
+             * https://developer.android.com/develop/ui/compose/text/user-input?hl=pt-br
+             */
             // Search Bar
             TextField(
                 value = searchQuery,
@@ -168,20 +171,6 @@ fun Medicine() {
             )
 
             Spacer(Modifier.height(5.dp))
-
-            //Sort
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                DropdownMenuWithDetails(
-                    onSortByName = { sortBy = "Name" },
-                    onSortByType = { sortBy = "Type" },
-                    onSortByQuantity = { sortBy = "Quantity" },
-                    onSortByLocation = { sortBy = "Location" }
-                )
-            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -198,6 +187,12 @@ fun Medicine() {
                 ) {
                     Text("Register new")
                 }
+                DropdownMenuWithDetails(
+                    onSortByName = { sortBy = "Name" },
+                    onSortByType = { sortBy = "Type" },
+                    onSortByQuantity = { sortBy = "Quantity" },
+                    onSortByLocation = { sortBy = "Location" }
+                )
             }
 
             // Medicine List (List of medicines)
