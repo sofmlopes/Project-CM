@@ -1,6 +1,8 @@
 package com.example.walkingundead.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -32,14 +34,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
+import com.example.walkingundead.models.Contact
+import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Skill
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -52,11 +61,12 @@ fun Authentication() {
     var passwordVisible by remember { mutableStateOf(false) }
     var authenticated by remember { mutableStateOf(authRepository.isAuthenticated()) }
     var selectedSkillsList by remember { mutableStateOf<List<Skill>>(emptyList()) }
+    var isContactPopupVisible by remember { mutableStateOf(false) }
     val database = RepositoryProvider.databaseRepository
 
     LaunchedEffect(Unit) {
-        database.getProfileSkills(Firebase.auth.currentUser?.email ?: "Unknown") {
-                fetchedSkills -> selectedSkillsList = fetchedSkills
+        database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
+            selectedSkillsList = fetchedSkills
         }
     }
 
@@ -88,14 +98,16 @@ fun Authentication() {
 
                 val robotoFamily = FontFamily.Default
 
-                Text("Authenticated as ${authRepository.getEmail()}",
+                Text(
+                    "Authenticated as ${authRepository.getEmail()}",
                     style = TextStyle(
                         fontFamily = robotoFamily, // Example font family (you can use custom fonts)
                         fontWeight = FontWeight.Bold,  // Bold text
                         fontSize = 20.sp,              // Font size
                         letterSpacing = 1.5.sp,        // Letter spacing (spacing between characters)
                         color = Color.Black           // Text color
-                    ))
+                    )
+                )
 
                 Spacer(Modifier.height(25.dp))
 
@@ -117,6 +129,16 @@ fun Authentication() {
                     }
                 ) {
                     Text("Change Skills")
+                }
+
+                // Button to open the skill picker screen
+                Button(
+                    shape = RoundedCornerShape(6.dp),
+                    onClick = {
+                        isContactPopupVisible = true
+                    }
+                ) {
+                    Text("Change Emergency Contacts")
                 }
 
                 Spacer(Modifier.height(25.dp))
@@ -220,7 +242,11 @@ fun Authentication() {
                             scope.launch {
                                 try {
                                     authRepository.register(email, password)
-                                    database.addNewProfileEntry(name = "nsei", email = email, skills = mutableListOf())
+                                    database.addNewProfileEntry(
+                                        name = "nsei",
+                                        email = email,
+                                        skills = mutableListOf()
+                                    )
 
                                     if (authRepository.isAuthenticated()) {
                                         authenticated = true
@@ -240,6 +266,100 @@ fun Authentication() {
             }
 
             Spacer(Modifier.height(50.dp))
+        }
+
+        // Dialog to manage contacts
+        if (isContactPopupVisible) {
+            Dialog(onDismissRequest = { isContactPopupVisible = false }) {
+                var newContactName by remember { mutableStateOf("") }
+                var newContactNumber by remember { mutableStateOf("") }
+                var contactsList by remember { mutableStateOf<List<Contact>>(emptyList()) }
+
+
+                LaunchedEffect(Unit) {
+                    database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
+                        contactsList = fetchedContacts
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.6f)
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            "Manage Emergency Contacts",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(10.dp))
+
+                        // List of contacts
+                        if (contactsList.isEmpty()) {
+                            Text("No contacts available", color = Color.Gray)
+                        } else {
+                            contactsList.forEach { contact ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(contact.name ?: "Unknown", fontWeight = FontWeight.Bold)
+                                        Text(contact.number ?: "No number")
+                                    }
+                                    IconButton(onClick = {
+                                        // todo Remove contact
+                                    }) {
+                                        Icon(Icons.Default.Lock, contentDescription = "Remove contact")
+                                    }
+                                    IconButton(onClick = {
+                                        // todo Edit contact
+                                        newContactName = contact.name ?: ""
+                                        newContactNumber = contact.number ?: ""
+                                    }) {
+                                        Icon(Icons.Default.Lock, contentDescription = "Edit contact")
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        // Input fields to add a new contact
+                        TextField(
+                            value = newContactName,
+                            onValueChange = { newContactName = it },
+                            label = { Text("Name") },
+                            placeholder = { Text("Enter contact name") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        TextField(
+                            value = newContactNumber,
+                            onValueChange = { newContactNumber = it },
+                            label = { Text("Number") },
+                            placeholder = { Text("Enter contact number") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        Button(onClick = {
+                            database.addContactToProfile(
+                                authRepository.getEmail(),
+                                Contact(name = newContactName, number = newContactNumber),
+                            )
+                        }) {
+                            Text("Add Contact")
+                        }
+                    }
+                }
+            }
         }
     }
 }
