@@ -389,7 +389,7 @@ class DatabaseService {
             emailRegisteredBy = Firebase.auth.currentUser?.email?: "Unknown"
         )
 
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Food")
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Foods")
 
         dbReference.push().setValue(foodEntry)
             .addOnSuccessListener {
