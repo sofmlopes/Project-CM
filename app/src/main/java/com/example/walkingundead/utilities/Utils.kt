@@ -1,8 +1,15 @@
 package com.example.walkingundead.utilities
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
+import android.util.Log
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
 /**
  * Function to calculate if a zombie is within range of the user (3 km)
@@ -34,6 +41,25 @@ fun parseLocation(location: String?): LatLng? {
         LatLng(lat, lng)
     } catch (e: Exception) {
         e.printStackTrace()
+        null
+    }
+}
+
+fun getAddressFromCoordinates(
+    context: Context,
+    lat: Double,
+    lng: Double
+): String? {
+    return try {
+        val geocoder = Geocoder(context, Locale.getDefault())
+        val addresses = geocoder.getFromLocation(lat, lng, 1)
+        if (!addresses.isNullOrEmpty()) {
+            addresses[0].getAddressLine(0)
+        } else {
+            null
+        }
+    } catch (e: Exception) {
+        Log.e("GeocoderError", "Error retrieving address", e)
         null
     }
 }

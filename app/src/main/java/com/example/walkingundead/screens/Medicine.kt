@@ -19,12 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -54,25 +57,24 @@ import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.getAddressFromCoordinates
+import com.example.walkingundead.utilities.parseLocation
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun Medicine() {
+
     val database = RepositoryProvider.databaseRepository
+    val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     var isDialogVisible by remember { mutableStateOf(false) }
-
     var medicines by remember { mutableStateOf<List<MedicineEntry>>(emptyList()) }
-
-    LaunchedEffect(Unit) {
-        database.getAllMedicines { fetchedMedicines ->
-            medicines = fetchedMedicines
-        }
-    }
-
     //Variables to add new entry
     var name by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
@@ -82,15 +84,50 @@ fun Medicine() {
     var isLocationDialogVisible by remember { mutableStateOf(false) }
     var markerPosition by remember { mutableStateOf<LatLng?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    // Sort options
+    // This serves as the default sorting option when the screen is first displayed.
+    var sortBy by remember { mutableStateOf("Name") }
 
-    // Filter medicines based on the search query
-    val filteredMedicines = medicines.filter {
-        it.name?.contains(searchQuery, ignoreCase = true) ?: false || // Match name
-                it.type?.contains(searchQuery, ignoreCase = true) ?: false || // Match type
-                it.location?.contains(searchQuery, ignoreCase = true) ?: false // Match location
+    LaunchedEffect(Unit) {
+        database.getAllMedicines { fetchedMedicines ->
+            medicines = fetchedMedicines
+        }
     }
+    // Filter medicines based on the search query
+    val filteredMedicines = medicines.filter { medicine ->
+        val matchesName = medicine.name?.contains(searchQuery, ignoreCase = true) ?: false
+        val matchesType = medicine.type?.contains(searchQuery, ignoreCase = true) ?: false
+        // Try to parse the location into LatLng and fetch the address to match it
+        val matchesLocation = medicine.location?.let {
+            parseLocation(it)?.let { latLng ->
+                // Fetch address asynchronously and compare it to the search query
+                var address: String? = null
+                try {
+                    address = getAddressFromCoordinates(context, latLng.latitude, latLng.longitude)
+                } catch (e: Exception) {
+                    Log.e("AddressError", "Error fetching address", e)
+                }
+                address?.contains(searchQuery, ignoreCase = true) ?: false
+            } ?: false
+        } ?: false
+        // Check if quantity matches the search query
+        val matchesQuantity = try {
+            val searchQuantity = searchQuery.toIntOrNull()  // Try to convert searchQuery to an integer
+            searchQuantity != null && medicine.quantity == searchQuantity  // Check if the quantity matches
+        } catch (e: Exception) {
+            false  // If there's an error converting to int, return false
+        }
 
-    val scrollState = rememberScrollState()
+        matchesName || matchesType || matchesLocation
+    }
+    // Sort medicines after filtering
+    val sortedMedicines = when (sortBy) {
+        "Name" -> filteredMedicines.sortedBy { it.name }
+        "Type" -> filteredMedicines.sortedBy { it.type }
+        "Quantity" -> filteredMedicines.sortedBy { it.quantity }
+        "Location" -> filteredMedicines.sortedBy { it.location }
+        else -> filteredMedicines
+    }
 
     Box(
         modifier = Modifier
@@ -132,37 +169,18 @@ fun Medicine() {
 
             Spacer(Modifier.height(5.dp))
 
-            //Sort and Filter
+            //Sort
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = { }
-                ) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Sort"
-                    )
-                    Text("Sort")
-                }
-
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = { }
-                ) {
-                    Icon(
-                        Icons.Default.Build,
-                        contentDescription = "Filter"
-                    )
-                    Text("Filter")
-                }
+                DropdownMenuWithDetails(
+                    onSortByName = { sortBy = "Name" },
+                    onSortByType = { sortBy = "Type" },
+                    onSortByQuantity = { sortBy = "Quantity" },
+                    onSortByLocation = { sortBy = "Location" }
+                )
             }
 
             Row(
@@ -192,10 +210,9 @@ fun Medicine() {
                 if (filteredMedicines.isEmpty()) {
                     Text("No medicines available", color = Color.DarkGray)
                 } else {
-                    filteredMedicines.forEach { medicine ->
-                        MedicineItem(
-                            medicine
-                        )
+                    // Display sorted and filtered medicines
+                    sortedMedicines.forEach { medicine ->
+                        MedicineItem(medicine = medicine)
                     }
                 }
             }
@@ -363,11 +380,26 @@ fun Medicine() {
 fun MedicineItem(medicine: MedicineEntry) {
 
     val database = remember { RepositoryProvider.databaseRepository }
+    val context = LocalContext.current
 
     var isDialogVisible by remember { mutableStateOf(false) }
     var quantity by remember { mutableIntStateOf(medicine.quantity) }
     var textValue by remember { mutableStateOf(quantity.toString()) }
     var tempValue by remember { mutableIntStateOf(quantity) } //used so changes are not immediately applied to quantity
+    // State to store the fetched address
+    var address by remember { mutableStateOf<String?>(null) }
+
+    // Fetch address from location
+    LaunchedEffect(medicine.location) {
+        medicine.location?.let { locationString ->
+            parseLocation(locationString)?.let { latLng ->
+                withContext(Dispatchers.IO) {
+                    // Fetch the address from the coordinates
+                    address = getAddressFromCoordinates(context, latLng.latitude, latLng.longitude)
+                }
+            }
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -384,16 +416,16 @@ fun MedicineItem(medicine: MedicineEntry) {
                 .padding(horizontal = 10.dp, vertical = 20.dp)
         ) {
             Text(
-                text = medicine.name?:"",
+                text = "Name: ${medicine.name ?: ""}",
                 fontWeight = FontWeight.Bold,
                 style = TextStyle(color = Color.Black)
             )
             Text(
-                text = medicine.type?:"",
+                text = "Type: ${medicine.type ?: ""}",
                 style = TextStyle(color = Color.DarkGray)
             )
             Text(
-                text = medicine.location?:"",
+                text = "Location: ${address ?: ""}",
                 style = TextStyle(color = Color.DarkGray)
             )
         }
@@ -531,6 +563,67 @@ fun MedicineItem(medicine: MedicineEntry) {
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * https://developer.android.com/develop/ui/compose/components/menu?hl=pt-br
+ */
+@Composable
+fun DropdownMenuWithDetails(
+    onSortByName: () -> Unit,
+    onSortByType: () -> Unit,
+    onSortByQuantity: () -> Unit,
+    onSortByLocation: () -> Unit
+) {
+
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        IconButton(onClick = { expanded = !expanded }) {
+            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Sort By Name") },
+                leadingIcon = { Icon(Icons.Outlined.SortByAlpha, contentDescription = null) },
+                onClick = {
+                    onSortByName()
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Sort By Type") },
+                leadingIcon = { Icon(Icons.Outlined.SortByAlpha, contentDescription = null) },
+                onClick = {
+                    onSortByType()
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Sort By Location") },
+                leadingIcon = { Icon(Icons.Outlined.SortByAlpha, contentDescription = null) },
+                onClick = {
+                    onSortByLocation()
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Sort By Quantity") },
+                leadingIcon = { Icon(Icons.Outlined.SortByAlpha, contentDescription = null) },
+                onClick = {
+                    onSortByQuantity()
+                    expanded = false
+                }
+            )
         }
     }
 }
