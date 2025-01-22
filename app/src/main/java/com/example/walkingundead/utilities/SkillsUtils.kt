@@ -31,11 +31,3 @@ fun SkillChip(skill: String, isSelected: Boolean, onSelect: (Boolean) -> Unit) {
         )
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewSkillsPickerScreen() {
-    WalkingUnDeadTheme {
-        SkillsPickerScreen()
-    }
-}
