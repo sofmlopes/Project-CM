@@ -81,7 +81,6 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
         }
     }
 
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -160,6 +159,8 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                 }
 
             } else {
+
+                Spacer(Modifier.height(50.dp))
 
                 // Show login form when not authenticated
                 WalkingUndeadLogo()

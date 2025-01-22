@@ -466,7 +466,7 @@ fun MedicineMarkers(
                 Marker(
                     state = markerState,
                     title = "Name: ${medicine.name}",
-                    snippet = "${medicine.type}, ${medicine.quantity}",
+                    snippet = "Type: ${medicine.type}, Quantity: ${medicine.quantity}",
                     icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                 )
             }
@@ -489,7 +489,7 @@ fun FoodMarkers(
                 Marker(
                     state = markerState,
                     title = "Food: ${food.name}",
-                    snippet = "Quantity: ${food.quantity}",
+                    snippet = "Type: ${food.type}, Quantity: ${food.quantity}, Expiration Date: ${food.expirationDate}",
                     icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                 )
             }
@@ -512,7 +512,7 @@ fun ShelterMarkers(shelterList: List<Shelter>, isShelterFiltered: Boolean){
                 Marker(
                     state = markerState,
                     title = "Shelter: ${shelter.name}",
-                    snippet = "Capacity: ${shelter.numberOfBeds}",
+                    snippet = "Number Of Free Beds: ${shelter.numberOfBeds - shelter.occupiedBeds}",
                     icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap),
                 )
             }
