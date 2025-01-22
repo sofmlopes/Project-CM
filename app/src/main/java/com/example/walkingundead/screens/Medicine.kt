@@ -34,10 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,9 +44,12 @@ import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.utilities.DropdownMenuWithDetailsMedicine
+import com.example.walkingundead.utilities.HeaderMedicine
 import com.example.walkingundead.utilities.MedicineItem
-import com.example.walkingundead.utilities.getAddressFromCoordinates
+import com.example.walkingundead.utilities.SearchBarMedicine
+import com.example.walkingundead.utilities.filterMedicinesOnSearch
 import com.example.walkingundead.utilities.parseLocation
+import com.example.walkingundead.utilities.sortMedicines
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -82,41 +82,9 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
             medicines = fetchedMedicines
         }
     }
-    // Filter medicines based on the search query
-    val filteredMedicines = medicines.filter { medicine ->
-        val matchesName = medicine.name?.contains(searchQuery, ignoreCase = true) ?: false
-        val matchesType = medicine.type?.contains(searchQuery, ignoreCase = true) ?: false
-        // Try to parse the location into LatLng and fetch the address to match it
-        val matchesLocation = medicine.location?.let {
-            parseLocation(it)?.let { latLng ->
-                // Fetch address asynchronously and compare it to the search query
-                var address: String? = null
-                try {
-                    address = getAddressFromCoordinates(context, latLng.latitude, latLng.longitude)
-                } catch (e: Exception) {
-                    Log.e("AddressError", "Error fetching address", e)
-                }
-                address?.contains(searchQuery, ignoreCase = true) ?: false
-            } ?: false
-        } ?: false
-        // Check if quantity matches the search query
-        val matchesQuantity = try {
-            val searchQuantity = searchQuery.toIntOrNull()  // Try to convert searchQuery to an integer
-            searchQuantity != null && medicine.quantity == searchQuantity  // Check if the quantity matches
-        } catch (e: Exception) {
-            false  // If there's an error converting to int, return false
-        }
 
-        matchesName || matchesType || matchesLocation || matchesQuantity
-    }
-    // Sort medicines after filtering
-    val sortedMedicines = when (sortBy) {
-        "Name" -> filteredMedicines.sortedBy { it.name }
-        "Type" -> filteredMedicines.sortedBy { it.type }
-        "Quantity" -> filteredMedicines.sortedBy { it.quantity }
-        "Location" -> filteredMedicines.sortedBy { it.location }
-        else -> filteredMedicines
-    }
+    val filteredMedicines = filterMedicinesOnSearch(medicines, searchQuery, context)
+    val sortedMedicines = sortMedicines(filteredMedicines,sortBy)
 
     Box(
         modifier = Modifier
@@ -134,29 +102,14 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                //horizontalArrangement = Arrangement.Center,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Text(
-                    text = "MEDICINE",
-                    color = colorResource(id = R.color.purple_500),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 10.dp),
-                )
+                HeaderMedicine()
             }
-            /**
-             * https://developer.android.com/develop/ui/compose/text/user-input?hl=pt-br
-             */
-            // Search Bar
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it }, // Update the search query
-                placeholder = { Text("Search Medicines", color = Color.DarkGray) },
-                modifier = Modifier
-                    .background(Color.White, RoundedCornerShape(8.dp))
-                    .fillMaxWidth(),
-                textStyle = TextStyle(color = Color.Black)
+
+            SearchBarMedicine(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { searchQuery = it } // Update the search query when it changes
             )
 
             Spacer(Modifier.height(5.dp))
@@ -364,4 +317,7 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
         }
     }
 }
+
+
+
 

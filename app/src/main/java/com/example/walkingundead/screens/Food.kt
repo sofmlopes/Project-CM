@@ -1,5 +1,6 @@
 package com.example.walkingundead.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,12 +50,19 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.Food
+import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.utilities.DatePickerModal
 import com.example.walkingundead.utilities.DropdownMenuWithDetailsFood
 import com.example.walkingundead.utilities.FoodItem
+import com.example.walkingundead.utilities.HeaderFood
+import com.example.walkingundead.utilities.SearchBarFood
+import com.example.walkingundead.utilities.filterFoodsOnSearch
+import com.example.walkingundead.utilities.filterMedicinesOnSearch
 import com.example.walkingundead.utilities.getAddressFromCoordinates
 import com.example.walkingundead.utilities.parseLocation
+import com.example.walkingundead.utilities.sortFoods
+import com.example.walkingundead.utilities.sortMedicines
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -93,43 +101,8 @@ fun Food() {
         }
     }
 
-    // Filter foods based on the search query
-    val filteredFoods = foods.filter { food ->
-        val matchesName = food.name?.contains(searchQuery, ignoreCase = true) ?: false
-        val matchesType = food.type?.contains(searchQuery, ignoreCase = true) ?: false
-        // Try to parse the location into LatLng and fetch the address to match it
-        val matchesLocation = food.location?.let {
-            parseLocation(it)?.let { latLng ->
-                // Fetch address asynchronously and compare it to the search query
-                var address: String? = null
-                try {
-                    address = getAddressFromCoordinates(context, latLng.latitude, latLng.longitude)
-                } catch (e: Exception) {
-                    Log.e("AddressError", "Error fetching address", e)
-                }
-                address?.contains(searchQuery, ignoreCase = true) ?: false
-            } ?: false
-        } ?: false
-        // Check if quantity matches the search query
-        val matchesQuantity = try {
-            val searchQuantity = searchQuery.toIntOrNull()  // Try to convert searchQuery to an integer
-            searchQuantity != null && food.quantity == searchQuantity  // Check if the quantity matches
-        } catch (e: Exception) {
-            false  // If there's an error converting to int, return false
-        }
-        val matchesExpirationDate = food.expirationDate?.contains(searchQuery, ignoreCase = true) ?: false
-
-        matchesName || matchesType || matchesLocation || matchesQuantity || matchesExpirationDate
-    }
-    // Sort foods after filtering
-    val sortedFoods = when (sortBy) {
-        "Name" -> filteredFoods.sortedBy { it.name }
-        "Type" -> filteredFoods.sortedBy { it.type }
-        "Quantity" -> filteredFoods.sortedBy { it.quantity }
-        "Location" -> filteredFoods.sortedBy { it.location }
-        "Expiration Date" -> filteredFoods.sortedBy { it.expirationDate }
-        else -> filteredFoods
-    }
+    val filteredFoods = filterFoodsOnSearch(foods, searchQuery, context)
+    val sortedFoods = sortFoods(filteredFoods,sortBy)
 
     Box(
         modifier = Modifier
@@ -150,23 +123,11 @@ fun Food() {
                 //horizontalArrangement = Arrangement.Center,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Text(
-                    text = "FOOD",
-                    color = colorResource(id = R.color.purple_500),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 10.dp),
-                )
+                HeaderFood()
             }
-            // Search Bar
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it }, // Update the search query
-                placeholder = { Text("Search Food", color = Color.DarkGray) },
-                modifier = Modifier
-                    .background(Color.White, RoundedCornerShape(8.dp))
-                    .fillMaxWidth(),
-                textStyle = TextStyle(color = Color.Black)
+            SearchBarFood(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { searchQuery = it } // Update the search query when it changes
             )
             Spacer(Modifier.height(5.dp))
 
@@ -392,3 +353,5 @@ fun Food() {
         }
     }
 }
+
+
