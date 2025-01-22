@@ -25,7 +25,10 @@ fun NavGraph(navController: NavHostController, currentLocation: LatLng?) {
     )
     {
         composable(route = Screens.Skills.route) {
-            SkillsPickerScreen()
+            SkillsPickerScreen(
+                onSelected = {
+                    navController.navigate(Screens.Authentication.route)
+                } )
         }
 
         // Define the Menu composable route with arguments in the navigation graph

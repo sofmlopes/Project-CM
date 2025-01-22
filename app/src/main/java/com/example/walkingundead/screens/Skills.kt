@@ -41,7 +41,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 @Composable
-fun SkillsPickerScreen() {
+fun SkillsPickerScreen(onSelected: () -> Unit) {
     // State for the list of skills and the new skill input
     var newSkill by remember { mutableStateOf("") }
     val defaultSkillsList = remember {
@@ -94,10 +94,10 @@ fun SkillsPickerScreen() {
                     isSelected = selectedSkillsList.any { it.name == skillName },
                     onSelect = { selected ->
                         if (selected) {
-                            val newSkill = Skill(
+                            val tempSkill = Skill(
                                 name = skillName,
                             )
-                            selectedSkillsList = selectedSkillsList + newSkill
+                            selectedSkillsList = selectedSkillsList + tempSkill
                         } else {
                             selectedSkillsList = selectedSkillsList.filter { it.name != skillName }
                         }
@@ -179,6 +179,7 @@ fun SkillsPickerScreen() {
                         }
                     }
                 }
+                onSelected()
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
