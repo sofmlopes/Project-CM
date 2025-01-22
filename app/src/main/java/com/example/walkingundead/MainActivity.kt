@@ -76,6 +76,7 @@ class MainActivity : ComponentActivity() {
                 // Fetch location and update state
                 fetchLocation(context = this) { location ->
                     currentLocationState.value = LatLng(location.latitude, location.longitude)
+                    RepositoryProvider.locationService.currentLocation = LatLng(location.latitude, location.longitude)
                 }
 
                 if (authenticated) {

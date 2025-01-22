@@ -320,9 +320,9 @@ fun sortShelters(
 ): List<Shelter> {
     return when (sortBy) {
         "Name" -> filteredShelterList.sortedBy { it.name }
-        "Location" -> filteredShelterList.sortedBy { it.location }
-        "Number Of Beds" -> filteredShelterList.sortedBy { it.numberOfBeds}
-        "Number Of Occupied Beds" -> filteredShelterList.sortedBy { it.occupiedBeds}
+        "Location" -> filteredShelterList.sortedBy { distanceToCurrentLocation(it.location) }
+        "Number Of Beds" -> filteredShelterList.sortedBy { it.numberOfBeds }
+        "Number Of Occupied Beds" -> filteredShelterList.sortedBy { it.occupiedBeds }
         else -> filteredShelterList
     }
 }

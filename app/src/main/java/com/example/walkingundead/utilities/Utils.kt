@@ -12,10 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.walkingundead.provider.RepositoryProvider
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * Function to calculate if a zombie is within range of the user (3 km)
@@ -94,4 +100,33 @@ fun WalkingUndeadLogo() {
             fontSize = 32.sp,
         )
     }
+}
+
+fun distanceToCurrentLocation(location: String?): Int? {
+    // Check if the location string is null or empty
+    if (location.isNullOrEmpty()) return null
+
+    // Parse the latitude and longitude from the location string
+    val latLng = location.split(",").mapNotNull { it.toDoubleOrNull() }
+    if (latLng.size != 2) return null // Ensure the location string contains both latitude and longitude
+
+    val currentLocation = RepositoryProvider.locationService.currentLocation ?: return null
+
+    val targetLocation = LatLng(latLng[0], latLng[1])
+
+    // Calculate the distance in meters using the Haversine formula
+    val earthRadius = 6371000.0 // Earth radius in meters
+
+    val dLat = Math.toRadians(targetLocation.latitude - currentLocation.latitude)
+    val dLng = Math.toRadians(targetLocation.longitude - currentLocation.longitude)
+
+    val a = sin(dLat / 2).pow(2) +
+            cos(Math.toRadians(currentLocation.latitude)) * cos(Math.toRadians(targetLocation.latitude)) *
+            sin(dLng / 2).pow(2)
+
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    val distance = earthRadius * c
+
+    return distance.toInt()
 }

@@ -402,7 +402,7 @@ fun sortFoods(
         "Name" -> filteredFoods.sortedBy { it.name }
         "Type" -> filteredFoods.sortedBy { it.type }
         "Quantity" -> filteredFoods.sortedBy { it.quantity }
-        "Location" -> filteredFoods.sortedBy { it.location }
+        "Location" -> filteredFoods.sortedBy { distanceToCurrentLocation(it.location) }
         "Expiration Date" -> filteredFoods.sortedBy { it.expirationDate }
         else -> filteredFoods
     }

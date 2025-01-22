@@ -50,8 +50,15 @@ import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.provider.RepositoryProvider
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 @Composable
 fun MedicineItem(medicine: MedicineEntry, onClick: () -> Unit) {
@@ -350,7 +357,7 @@ fun sortMedicines(
         "Name" -> filteredMedicines.sortedBy { it.name }
         "Type" -> filteredMedicines.sortedBy { it.type }
         "Quantity" -> filteredMedicines.sortedBy { it.quantity }
-        "Location" -> filteredMedicines.sortedBy { it.location }
+        "Location" -> filteredMedicines.sortedBy { distanceToCurrentLocation(it.location) }
         else -> filteredMedicines  // No sorting if the criterion is not recognized
     }
 }
