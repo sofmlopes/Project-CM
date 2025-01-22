@@ -55,7 +55,7 @@ import com.example.walkingundead.utilities.WalkingUndeadLogo
 import kotlinx.coroutines.launch
 
 @Composable
-fun Authentication() {
+fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
     val authRepository = remember { RepositoryProvider.authRepository }
     val navController = remember { RepositoryProvider.navController }
     val scope = rememberCoroutineScope()
@@ -148,6 +148,7 @@ fun Authentication() {
                             try {
                                 authRepository.logOut()
                                 authenticated = false
+                                onLogout()
 
                             } catch (e: Exception) {
 
@@ -216,9 +217,11 @@ fun Authentication() {
 
                                     if (authRepository.isAuthenticated()) {
                                         authenticated = true
+                                        onLogin()
                                         navController.navigate(Screens.Menu.route)
                                     } else {
                                         authenticated = false
+                                        onLogout()
                                     }
 
                                 } catch (e: Exception) {
@@ -247,8 +250,10 @@ fun Authentication() {
 
                                     if (authRepository.isAuthenticated()) {
                                         authenticated = true
+                                        onLogin()
                                     } else {
                                         authenticated = false
+                                        onLogout()
                                     }
 
                                 } catch (e: Exception) {
