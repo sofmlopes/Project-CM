@@ -3,6 +3,7 @@ package com.example.walkingundead.utilities
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +59,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun FoodItem(food: Food) {
+fun FoodItem(food: Food, onClick: () -> Unit) {
 
     val database = remember { RepositoryProvider.databaseRepository }
     val context = LocalContext.current
@@ -86,7 +87,8 @@ fun FoodItem(food: Food) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp) //5dp = vertical space between cards
-            .background(Color.White, RoundedCornerShape(8.dp)),
+            .background(Color.White, RoundedCornerShape(8.dp))
+            .clickable { onClick() }, // Trigger callback on click
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

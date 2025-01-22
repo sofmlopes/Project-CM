@@ -17,11 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -37,10 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,26 +43,28 @@ import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.DropdownMenuWithDetailsShelter
+import com.example.walkingundead.utilities.FoodItem
+import com.example.walkingundead.utilities.HeaderShelter
+import com.example.walkingundead.utilities.SearchBarShelter
 import com.example.walkingundead.utilities.ShelterItem
+import com.example.walkingundead.utilities.filterSheltersOnSearch
+import com.example.walkingundead.utilities.parseLocation
+import com.example.walkingundead.utilities.sortShelters
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 
 @Composable
-fun Shelter() {
+fun Shelter(onShelterSelected: (LatLng?) -> Unit) {
+
     val database = RepositoryProvider.databaseRepository
+    val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     var isDialogVisible by remember { mutableStateOf(false) }
-
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
-
-    LaunchedEffect(Unit) {
-        database.getAllShelters { fetchedShelters ->
-            shelterList = fetchedShelters
-        }
-    }
-
     //Variables to add new entry
     var name by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
@@ -78,16 +74,18 @@ fun Shelter() {
     var isLocationDialogVisible by remember { mutableStateOf(false) }
     var textValueNrBeds by remember { mutableStateOf("") }
     var textValueOccupiedBeds by remember { mutableStateOf("") }
-
     var searchQuery by remember { mutableStateOf("") }
+    var sortBy by remember { mutableStateOf("Name") }
 
-    // Filter medicines based on the search query
-    val filteredShelterList = shelterList.filter {
-        it.name?.contains(searchQuery, ignoreCase = true) ?: false || // Match name
-                it.location?.contains(searchQuery, ignoreCase = true) ?: false // Match location
+    LaunchedEffect(Unit) {
+        database.getAllShelters { fetchedShelters ->
+            shelterList = fetchedShelters
+        }
     }
 
-    val scrollState = rememberScrollState()
+    val filteredShelterList = filterSheltersOnSearch(shelterList, searchQuery, context)
+    val sortedShelters = sortShelters(filteredShelterList,sortBy)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -104,49 +102,16 @@ fun Shelter() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                //horizontalArrangement = Arrangement.Center,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Text(
-                    text = "SHELTER",
-                    color = colorResource(id = R.color.purple_500),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 10.dp),
-                )
+                HeaderShelter()
             }
-            // Search Bar
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it }, // Update the search query
-                placeholder = { Text("Search Shelter", color = Color.DarkGray) },
-                modifier = Modifier
-                    .background(Color.White, RoundedCornerShape(8.dp))
-                    .fillMaxWidth(),
-                textStyle = TextStyle(color = Color.Black)
+            SearchBarShelter(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { searchQuery = it } // Update the search query when it changes
             )
 
             Spacer(Modifier.height(5.dp))
-
-            //Sort and Filter
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = { }
-                ) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Sort"
-                    )
-                    Text("Sort")
-                }
-            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -163,8 +128,13 @@ fun Shelter() {
                 ) {
                     Text(stringResource(R.string.register_new))
                 }
+                DropdownMenuWithDetailsShelter(
+                    onSortByName = { sortBy = "Name" },
+                    onSortByLocation = { sortBy = "Location" },
+                    onSortByNumberOfBeds = { sortBy = "Number Of Beds" },
+                    onSortByNumberOfOccupiedBeds =  { sortBy = "Number Of Occupied Beds" },
+                )
             }
-
 
             // Shelters List (List of shelters)
             Column(
@@ -176,14 +146,17 @@ fun Shelter() {
                 if (filteredShelterList.isEmpty()) {
                     Text("No shelters available", color = Color.Gray)
                 } else {
-                    filteredShelterList.forEach { shelter ->
+                    sortedShelters.forEach { shelter ->
                         ShelterItem(
-                            shelter
+                            shelter = shelter,
+                            onClick = {
+                                val tempLocation = parseLocation(shelter.location)
+                                onShelterSelected(tempLocation) // Notify parent about selection
+                            }
                         )
                     }
                 }
             }
-
         }
 
         //Register new pop up

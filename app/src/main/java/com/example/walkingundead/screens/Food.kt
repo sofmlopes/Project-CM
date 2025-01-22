@@ -1,6 +1,5 @@
 package com.example.walkingundead.screens
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,10 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,7 +46,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.Food
-import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.utilities.DatePickerModal
 import com.example.walkingundead.utilities.DropdownMenuWithDetailsFood
@@ -58,11 +53,8 @@ import com.example.walkingundead.utilities.FoodItem
 import com.example.walkingundead.utilities.HeaderFood
 import com.example.walkingundead.utilities.SearchBarFood
 import com.example.walkingundead.utilities.filterFoodsOnSearch
-import com.example.walkingundead.utilities.filterMedicinesOnSearch
-import com.example.walkingundead.utilities.getAddressFromCoordinates
 import com.example.walkingundead.utilities.parseLocation
 import com.example.walkingundead.utilities.sortFoods
-import com.example.walkingundead.utilities.sortMedicines
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -72,7 +64,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun Food() {
+fun Food(onFoodSelected: (LatLng?) -> Unit) {
 
     val database = RepositoryProvider.databaseRepository
     val scrollState = rememberScrollState()
@@ -120,7 +112,6 @@ fun Food() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                //horizontalArrangement = Arrangement.Center,
                 horizontalArrangement = Arrangement.Start
             ) {
                 HeaderFood()
@@ -154,6 +145,8 @@ fun Food() {
                     onSortByExpirationDate = { sortBy = "Expiration Date" }
                 )
             }
+
+            // List of Foods
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,7 +158,13 @@ fun Food() {
                 } else {
                     // Display sorted and filtered foods
                     sortedFoods.forEach { food ->
-                        FoodItem(food = food)
+                        FoodItem(
+                            food = food,
+                            onClick = {
+                                val tempLocation = parseLocation(food.location)
+                                onFoodSelected(tempLocation) // Notify parent about selection
+                            }
+                        )
                     }
                 }
             }

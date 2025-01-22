@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -59,7 +58,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 private const val REQUEST_CALL_PERMISSION = 1
 
 @Composable
-fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
+fun Menu(currentLocation: LatLng?, selectedLocation: LatLng?) {
 
     val database = RepositoryProvider.databaseRepository
 
@@ -82,8 +81,8 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
 
     val cameraPositionState = rememberCameraPositionState {
         val defaultLatLng = LatLng(38.736946, -9.142685) // Default location
-        val location = selectedMedicineLocation ?: currentLocation ?: defaultLatLng
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(location, 10f)
+        val location = selectedLocation ?: currentLocation ?: defaultLatLng
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(location, 12f)
     }
 
     LaunchedEffect(Unit) {

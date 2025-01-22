@@ -36,17 +36,17 @@ fun NavGraph(navController: NavHostController, currentLocation: LatLng?) {
                 navArgument("selectedLng") { type = NavType.StringType; nullable = true }
             )
         ) { backStackEntry ->
-            val selectedMedicineLat = backStackEntry.arguments?.getString("selectedLat")?.toDoubleOrNull()
-            val selectedMedicineLng = backStackEntry.arguments?.getString("selectedLng")?.toDoubleOrNull()
+            val selectedLat = backStackEntry.arguments?.getString("selectedLat")?.toDoubleOrNull()
+            val selectedLng = backStackEntry.arguments?.getString("selectedLng")?.toDoubleOrNull()
 
             // Parse the selected location if valid, otherwise null
-            val selectedMedicineLocation = if (selectedMedicineLat != null && selectedMedicineLng != null) {
-                LatLng(selectedMedicineLat, selectedMedicineLng)
+            val selectedLocation = if (selectedLat != null && selectedLng != null) {
+                LatLng(selectedLat, selectedLng)
             } else null
 
             Menu(
                 currentLocation = currentLocation,
-                selectedMedicineLocation = selectedMedicineLocation
+                selectedLocation = selectedLocation,
             )
         }
 
@@ -67,11 +67,33 @@ fun NavGraph(navController: NavHostController, currentLocation: LatLng?) {
         }
 
         composable(route = Screens.Food.route) {
-            Food()
+            Food(
+                onFoodSelected = { selectedLocation ->
+                    // Navigate to the Menu screen and pass the location as arguments
+                    if (selectedLocation != null) {
+                        val latitude = Uri.encode(selectedLocation.latitude.toString())
+                        val longitude = Uri.encode(selectedLocation.longitude.toString())
+                        navController.navigate(
+                            "${Screens.Menu.route}?selectedLat=$latitude&selectedLng=$longitude"
+                        )
+                    }
+                }
+            )
         }
 
         composable(route = Screens.Shelter.route) {
-            Shelter()
+            Shelter(
+                onShelterSelected = { selectedLocation ->
+                    // Navigate to the Menu screen and pass the location as arguments
+                    if (selectedLocation != null) {
+                        val latitude = Uri.encode(selectedLocation.latitude.toString())
+                        val longitude = Uri.encode(selectedLocation.longitude.toString())
+                        navController.navigate(
+                            "${Screens.Menu.route}?selectedLat=$latitude&selectedLng=$longitude"
+                        )
+                    }
+                },
+            )
         }
 
         composable(route = Screens.Profiles.route) {
