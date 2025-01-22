@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
@@ -13,21 +12,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.walkingundead.R
@@ -51,20 +40,22 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.CurrentLocationMarker
+import com.example.walkingundead.utilities.FilterPopup
+import com.example.walkingundead.utilities.FoodMarkers
+import com.example.walkingundead.utilities.MedicineMarkers
 import com.example.walkingundead.utilities.ReportZombieDialog
 import com.example.walkingundead.utilities.SOSDialog
+import com.example.walkingundead.utilities.ShelterMarkers
 import com.example.walkingundead.utilities.SoundGrenadeDialog
+import com.example.walkingundead.utilities.ZombieMarkers
 import com.example.walkingundead.utilities.isZombieNear
 import com.example.walkingundead.utilities.parseLocation
-import com.example.walkingundead.utilities.scaleBitmap
 import com.example.walkingundead.utilities.sendNotificationZombiesInTheArea
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
 
 private const val REQUEST_CALL_PERMISSION = 1
 
@@ -123,97 +114,14 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
         ) {
             GoogleMap(
                 cameraPositionState = cameraPositionState,
-                uiSettings = MapUiSettings(
-                    zoomControlsEnabled = true
-                )
+                uiSettings = MapUiSettings(zoomControlsEnabled = true)
             ) {
-                // Add medicine markers
-                medicines.forEach { medicine ->
-                    if(isMedicineFiltered){
-                        val location = parseLocation(medicine.location)
-                        location?.let {
-                            val markerState = rememberMarkerState(position = it)
-                            // Convert the image resource to Bitmap
-                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.medicine_marker)
-                            // Scale the bitmap to a fixed size
-                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
-                            Marker(
-                                state = markerState,
-                                title = "Medicine: ${medicine.name}",
-                                snippet = "Quantity: ${medicine.quantity}",
-                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
-                            )
-                        }
-                    }
-                }
+                MedicineMarkers(medicines = medicines, isMedicineFiltered = isMedicineFiltered)
+                FoodMarkers(foods = foods, isFoodFiltered = isFoodFiltered)
+                ShelterMarkers(shelterList = shelterList, isShelterFiltered = isShelterFiltered)
+                CurrentLocationMarker(currentLocation)
+                ZombieMarkers(zombieReports =zombieReports, isZombiesFiltered =isZombiesFiltered)
 
-                // Add food markers
-                foods.forEach { food ->
-                    if(isFoodFiltered){
-                        val location = parseLocation(food.location)
-                        location?.let {
-                            val markerState = rememberMarkerState(position = it)
-                            // Convert the image resource to Bitmap
-                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.food_marker)
-                            // Scale the bitmap to a fixed size
-                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
-                            Marker(
-                                state = markerState,
-                                title = "Food: ${food.name}",
-                                snippet = "Quantity: ${food.quantity}",
-                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
-                            )
-                        }
-                    }
-                }
-                // Add shelter markers
-                shelterList.forEach { shelter ->
-                    if(isShelterFiltered){
-                        val location = parseLocation(shelter.location)
-                        location?.let {
-                            val markerState = rememberMarkerState(position = it)
-                            // Convert the image resource to Bitmap
-                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.shelter_marker)
-                            // Scale the bitmap to a fixed size
-                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
-                            Marker(
-                                state = markerState,
-                                title = "Shelter: ${shelter.name}",
-                                snippet = "Capacity: ${shelter.numberOfBeds}",
-                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap),
-                            )
-                        }
-                    }
-                }
-
-                // Add current location marker
-                currentLocation?.let {
-                    Marker(
-                        state = rememberMarkerState(position = it),
-                        title = "You are here",
-                        snippet = "Current location",
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                    )
-                }
-
-                //Show zombie markers on the Map
-                zombieReports.forEach { report ->
-                    if(isZombiesFiltered){
-                        val location = parseLocation(report.location)
-                        location?.let {
-                            val markerState = rememberMarkerState(position = it)
-                            // Convert the image resource to Bitmap
-                            val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.zombie_marker)
-                            // Scale the bitmap to a fixed size
-                            val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
-                            Marker(
-                                state = markerState,
-                                title = "Watch out! A zombie is in your area.",
-                                icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
-                            )
-                        }
-                    }
-                }
                 zombieReports.forEach { report ->
                     val zombieLocation = parseLocation(report.location)
                     if (zombieLocation != null && currentLocation != null) {
@@ -335,110 +243,23 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
                 )
             }
             if (isFilterPopupVisible) {
-                Dialog(
-                    onDismissRequest = {
-                        isFilterPopupVisible = false
-                    }
-                ) {
-                    Card(
-                        modifier = Modifier.padding(16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                    ) {
-                        Column(
-                            Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "Filters",
-                                style = MaterialTheme.typography.headlineLarge,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            FilterChip(
-                                onClick = { isZombiesFiltered = !isZombiesFiltered },
-                                label = {
-                                    Text("Show Zombies")
-                                },
-                                selected = isZombiesFiltered,
-                                leadingIcon = if (isZombiesFiltered) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Filled.Done,
-                                            contentDescription = "Done icon",
-                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                        )
-                                    }
-                                } else {
-                                    null
-                                },
-                            )
-                            FilterChip(
-                                onClick = { isMedicineFiltered = !isMedicineFiltered },
-                                label = {
-                                    Text("Show Medicine")
-                                },
-                                selected = isMedicineFiltered,
-                                leadingIcon = if (isMedicineFiltered) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Filled.Done,
-                                            contentDescription = "Done icon",
-                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                        )
-                                    }
-                                } else {
-                                    null
-                                },
-                            )
-                            FilterChip(
-                                onClick = { isFoodFiltered = !isFoodFiltered },
-                                label = {
-                                    Text("Show Food")
-                                },
-                                selected = isFoodFiltered,
-                                leadingIcon = if (isFoodFiltered) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Filled.Done,
-                                            contentDescription = "Done icon",
-                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                        )
-                                    }
-                                } else {
-                                    null
-                                },
-                            )
-                            FilterChip(
-                                onClick = { isShelterFiltered = !isShelterFiltered },
-                                label = {
-                                    Text("Show Shelters")
-                                },
-                                selected = isShelterFiltered,
-                                leadingIcon = if (isShelterFiltered) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Filled.Done,
-                                            contentDescription = "Done icon",
-                                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                                        )
-                                    }
-                                } else {
-                                    null
-                                },
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Button(onClick = { isFilterPopupVisible = false }) {
-                                Text("Close")
-                            }
-                        }
-                    }
-                }
+                FilterPopup(
+                    isZombiesFiltered = isZombiesFiltered,
+                    isMedicineFiltered = isMedicineFiltered,
+                    isFoodFiltered = isFoodFiltered,
+                    isShelterFiltered = isShelterFiltered,
+                    onZombiesFilterToggle = { isZombiesFiltered = !isZombiesFiltered },
+                    onMedicineFilterToggle = { isMedicineFiltered = !isMedicineFiltered },
+                    onFoodFilterToggle = { isFoodFiltered = !isFoodFiltered },
+                    onShelterFilterToggle = { isShelterFiltered = !isShelterFiltered },
+                    onClose = { isFilterPopupVisible = false }
+                )
             }
         }
     }
 }
+
+
+
+
 

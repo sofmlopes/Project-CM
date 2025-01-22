@@ -6,18 +6,28 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,7 +44,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.walkingundead.R
+import com.example.walkingundead.models.Food
+import com.example.walkingundead.models.MedicineEntry
+import com.example.walkingundead.models.ReportZombie
+import com.example.walkingundead.models.Shelter
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberMarkerState
 
 /**
  * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
@@ -282,6 +299,208 @@ fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, c
     } else {
         // For devices below Android 13, no runtime permission is required
         NotificationManagerCompat.from(context).notify(1, builder.build())
+    }
+}
+
+@Composable
+fun ZombieMarkers(zombieReports: List<ReportZombie>, isZombiesFiltered: Boolean) {
+    //Show zombie markers on the Map
+    zombieReports.forEach { report ->
+        if(isZombiesFiltered){
+            val location = parseLocation(report.location)
+            location?.let {
+                val markerState = rememberMarkerState(position = it)
+                // Convert the image resource to Bitmap
+                val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.zombie_marker)
+                // Scale the bitmap to a fixed size
+                val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
+                Marker(
+                    state = markerState,
+                    title = "Watch out! A zombie is in your area.",
+                    icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CurrentLocationMarker(currentLocation: LatLng?) {
+    // Add current location marker
+    currentLocation?.let {
+        Marker(
+            state = rememberMarkerState(position = it),
+            title = "You are here",
+            snippet = "Current location",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+        )
+    }
+}
+
+@Composable
+fun MedicineMarkers(
+    medicines: List<MedicineEntry>,
+    isMedicineFiltered: Boolean
+) {
+    medicines.forEach { medicine ->
+        if (isMedicineFiltered) {
+            val location = parseLocation(medicine.location)
+            location?.let {
+                val markerState = rememberMarkerState(position = it)
+                val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.medicine_marker)
+                val scaledBitmap = scaleBitmap(bitmap, 80, 80)
+                Marker(
+                    state = markerState,
+                    title = "Medicine: ${medicine.name}",
+                    snippet = "Quantity: ${medicine.quantity}",
+                    icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FoodMarkers(
+    foods: List<Food>,
+    isFoodFiltered: Boolean
+) {
+    foods.forEach { food ->
+        if (isFoodFiltered) {
+            val location = parseLocation(food.location)
+            location?.let {
+                val markerState = rememberMarkerState(position = it)
+                val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.food_marker)
+                val scaledBitmap = scaleBitmap(bitmap, 80, 80)
+                Marker(
+                    state = markerState,
+                    title = "Food: ${food.name}",
+                    snippet = "Quantity: ${food.quantity}",
+                    icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ShelterMarkers(shelterList: List<Shelter>, isShelterFiltered: Boolean){
+    // Add shelter markers
+    shelterList.forEach { shelter ->
+        if(isShelterFiltered){
+            val location = parseLocation(shelter.location)
+            location?.let {
+                val markerState = rememberMarkerState(position = it)
+                // Convert the image resource to Bitmap
+                val bitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.shelter_marker)
+                // Scale the bitmap to a fixed size
+                val scaledBitmap = scaleBitmap(bitmap, 80, 80)  // Adjust the size here
+                Marker(
+                    state = markerState,
+                    title = "Shelter: ${shelter.name}",
+                    snippet = "Capacity: ${shelter.numberOfBeds}",
+                    icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterPopup(
+    isZombiesFiltered: Boolean,
+    isMedicineFiltered: Boolean,
+    isFoodFiltered: Boolean,
+    isShelterFiltered: Boolean,
+    onZombiesFilterToggle: () -> Unit,
+    onMedicineFilterToggle: () -> Unit,
+    onFoodFilterToggle: () -> Unit,
+    onShelterFilterToggle: () -> Unit,
+    onClose: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onClose
+    ) {
+        Card(
+            modifier = Modifier.padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "Filters",
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                FilterChip(
+                    onClick = onZombiesFilterToggle,
+                    label = { Text("Show Zombies") },
+                    selected = isZombiesFiltered,
+                    leadingIcon = if (isZombiesFiltered) {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                contentDescription = "Done icon",
+                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            )
+                        }
+                    } else null
+                )
+                FilterChip(
+                    onClick = onMedicineFilterToggle,
+                    label = { Text("Show Medicine") },
+                    selected = isMedicineFiltered,
+                    leadingIcon = if (isMedicineFiltered) {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                contentDescription = "Done icon",
+                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            )
+                        }
+                    } else null
+                )
+                FilterChip(
+                    onClick = onFoodFilterToggle,
+                    label = { Text("Show Food") },
+                    selected = isFoodFiltered,
+                    leadingIcon = if (isFoodFiltered) {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                contentDescription = "Done icon",
+                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            )
+                        }
+                    } else null
+                )
+                FilterChip(
+                    onClick = onShelterFilterToggle,
+                    label = { Text("Show Shelters") },
+                    selected = isShelterFiltered,
+                    leadingIcon = if (isShelterFiltered) {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                contentDescription = "Done icon",
+                                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            )
+                        }
+                    } else null
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(onClick = onClose) {
+                    Text("Close")
+                }
+            }
+        }
     }
 }
 
