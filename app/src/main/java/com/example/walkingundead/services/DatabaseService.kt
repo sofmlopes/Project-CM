@@ -14,7 +14,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
-import java.time.LocalDate
 
 class DatabaseService {
 
@@ -336,6 +335,18 @@ class DatabaseService {
                 Log.e("FirebaseError", "Error fetching shelters", error.toException())
             }
         })
+    }
+
+    fun editShelter(id: String, updatedEntry: Shelter) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Shelters").child(id)
+
+        dbReference.setValue(updatedEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpdate", "Successfully updated shelter entry")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpdate", "Failed to update shelter entry", exception)
+            }
     }
 
     fun addNewReportZombie(location: String) {
