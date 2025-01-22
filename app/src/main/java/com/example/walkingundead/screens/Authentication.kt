@@ -71,7 +71,9 @@ fun Authentication() {
     if (authRepository.isAuthenticated()) {
         LaunchedEffect(Unit) {
             database.getContactsByEmail(authRepository.getEmail()) { fetchedContacts ->
-                contactsList = fetchedContacts
+                if (fetchedContacts != null) {
+                    contactsList = fetchedContacts
+                }
             }
             database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
                 selectedSkillsList = fetchedSkills
