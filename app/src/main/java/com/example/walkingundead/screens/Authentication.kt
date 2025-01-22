@@ -70,13 +70,13 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
 
     if (authRepository.isAuthenticated()) {
         LaunchedEffect(Unit) {
-            database.getContactsByEmail(authRepository.getEmail()) { fetchedContacts ->
-                if (fetchedContacts != null) {
-                    contactsList = fetchedContacts
+            scope.launch {
+                database.getContactsByEmail(authRepository.getEmail()) { fetchedContacts ->
+                    contactsList = fetchedContacts ?: emptyList()
                 }
-            }
-            database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
-                selectedSkillsList = fetchedSkills
+                database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
+                    selectedSkillsList = fetchedSkills
+                }
             }
         }
     }
@@ -218,7 +218,6 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                                     if (authRepository.isAuthenticated()) {
                                         authenticated = true
                                         onLogin()
-                                        navController.navigate(Screens.Menu.route)
                                     } else {
                                         authenticated = false
                                         onLogout()
@@ -251,6 +250,7 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                                     if (authRepository.isAuthenticated()) {
                                         authenticated = true
                                         onLogin()
+                                        navController.navigate(Screens.Skills.route)
                                     } else {
                                         authenticated = false
                                         onLogout()
@@ -378,15 +378,6 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                                 Contact(name = newContactName, number = newContactNumber),
                             )
                             isContactPopupVisible = false
-
-                            database.getContactsByEmail(authRepository.getEmail()) { fetchedContacts ->
-                                if (fetchedContacts != null) {
-                                    contactsList = fetchedContacts
-                                }
-                            }
-                            database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
-                                selectedSkillsList = fetchedSkills
-                            }
                         }) {
                             Text("Add Contact")
                         }
