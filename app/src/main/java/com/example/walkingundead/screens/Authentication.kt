@@ -68,15 +68,17 @@ fun Authentication() {
     var isContactPopupVisible by remember { mutableStateOf(false) }
     val database = RepositoryProvider.databaseRepository
 
-
-    LaunchedEffect(Unit) {
-        database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
-            contactsList = fetchedContacts
-        }
-        database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
-            selectedSkillsList = fetchedSkills
+    if (authRepository.isAuthenticated()) {
+        LaunchedEffect(Unit) {
+            database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
+                contactsList = fetchedContacts
+            }
+            database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
+                selectedSkillsList = fetchedSkills
+            }
         }
     }
+
 
     Box(
         modifier = Modifier
@@ -298,24 +300,25 @@ fun Authentication() {
                     }
                 }
 
-
-                // List of Emergency Contacts
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = "Contacts",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    if (contactsList.isEmpty()) {
-                        Text("No contacts available", color = Color.Gray)
-                    } else {
-                        contactsList.forEach { contact ->
-                            Text("${contact.name}: ${contact.number}")
+                if (authenticated) {
+                    // List of Emergency Contacts
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Contacts",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        if (contactsList.isEmpty()) {
+                            Text("No contacts available", color = Color.Gray)
+                        } else {
+                            contactsList.forEach { contact ->
+                                Text("${contact.name}: ${contact.number}")
+                            }
                         }
                     }
                 }

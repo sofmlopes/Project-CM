@@ -91,7 +91,7 @@ fun Food() {
     var searchQuery by remember { mutableStateOf("") }
     // Sort options
     // This serves as the default sorting option when the screen is first displayed.
-    var sortBy by remember { mutableStateOf("Name") }
+    var sortBy by remember { mutableStateOf("Quantity") }
     var expirationDate by remember { mutableStateOf("") } // Holds the selected date as a string
     var showDatePicker by remember { mutableStateOf(false) } // Controls the visibility of the DatePickerModal
 
