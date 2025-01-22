@@ -11,6 +11,7 @@ import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,15 +20,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -36,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,13 +53,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.walkingundead.R
-import com.example.walkingundead.models.Contact
 import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
-import com.example.walkingundead.provider.RepositoryProvider
-import com.example.walkingundead.provider.RepositoryProvider.authRepository
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.Marker
@@ -136,7 +132,7 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit, onYes: (LatLng
  * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
  */
 @Composable
-fun SOSDialog(onNo: () -> Unit, onYes: () -> Unit) {
+fun SOSDialog(onNo: () -> Unit,  onYes: (Context, String) -> Unit) {
 
     val context = LocalContext.current
     val emergencyNumber = "934051473"
@@ -182,7 +178,7 @@ fun SOSDialog(onNo: () -> Unit, onYes: () -> Unit) {
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
-                        onClick = { onYes() },
+                        onClick = { onYes(context,emergencyNumber) },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("YES")
@@ -194,107 +190,6 @@ fun SOSDialog(onNo: () -> Unit, onYes: () -> Unit) {
                         Text("NO")
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ChooseNumber(onCancel: () -> Unit, onCall: (Context, String) -> Unit) {
-    val database = RepositoryProvider.databaseRepository
-    val authRepository = RepositoryProvider.authRepository
-
-    var contactsList by remember { mutableStateOf<List<Contact>>(emptyList()) }
-
-    LaunchedEffect(Unit) {
-        database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
-            contactsList = fetchedContacts
-        }
-    }
-
-    Dialog(onDismissRequest = onCancel) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ) {
-                // Title
-                Text(
-                    text = "EMERGENCY CALL",
-                    color = colorResource(id = R.color.purple_500),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
-
-                // Subtitle
-                Text(
-                    text = "Choose the phone number to call",
-                    modifier = Modifier.padding(bottom = 16.dp),
-                )
-
-                // Scrollable list of contacts
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                        .padding(vertical = 8.dp),
-                ) {
-                    contactsList.forEach { contact ->
-                        SOSContactItem(
-                            contact = contact,
-                            onCall = { context, phoneNumber ->
-                                onCall(context, phoneNumber)
-                            }
-                        )
-                    }
-                }
-
-                // Cancel button at the bottom
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(
-                        onClick = onCancel,
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("CANCEL")
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun SOSContactItem(contact: Contact, onCall: (Context, String) -> Unit) {
-    val database = RepositoryProvider.databaseRepository
-    val context = LocalContext.current
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(600.dp)
-            .padding(vertical = 4.dp)
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(contact.name ?: "Unknown", fontWeight = FontWeight.Bold)
-            Text(contact.number ?: "No number")
-        }
-        Button(onClick = {onCall(context, contact.number?: "")}) {
-            Row {
-                Text("Call")
-                Icon(Icons.Default.Call, "Call")
             }
         }
     }
@@ -465,8 +360,8 @@ fun MedicineMarkers(
                 val scaledBitmap = scaleBitmap(bitmap, 80, 80)
                 Marker(
                     state = markerState,
-                    title = "Medicine: ${medicine.name}",
-                    snippet = "Quantity: ${medicine.quantity}",
+                    title = "Name: ${medicine.name}",
+                    snippet = "${medicine.type}, ${medicine.quantity}",
                     icon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
                 )
             }
@@ -520,8 +415,12 @@ fun ShelterMarkers(shelterList: List<Shelter>, isShelterFiltered: Boolean){
     }
 }
 
+/**
+ *  https://developer.android.com/develop/ui/compose/components/chip
+ *  https://developer.android.com/develop/ui/compose/components/menu
+ */
 @Composable
-fun FilterPopup(
+fun DropdownWithFilterChips(
     isZombiesFiltered: Boolean,
     isMedicineFiltered: Boolean,
     isFoodFiltered: Boolean,
@@ -529,93 +428,112 @@ fun FilterPopup(
     onZombiesFilterToggle: () -> Unit,
     onMedicineFilterToggle: () -> Unit,
     onFoodFilterToggle: () -> Unit,
-    onShelterFilterToggle: () -> Unit,
-    onClose: () -> Unit
+    onShelterFilterToggle: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onClose
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .padding(16.dp)
     ) {
-        Card(
-            modifier = Modifier.padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
+        IconButton(onClick = { expanded = !expanded }) {
+            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
         ) {
-            Column(
-                Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    "Filters",
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                FilterChip(
-                    onClick = onZombiesFilterToggle,
-                    label = { Text("Show Zombies") },
-                    selected = isZombiesFiltered,
-                    leadingIcon = if (isZombiesFiltered) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Done,
-                                contentDescription = "Done icon",
-                                modifier = Modifier.size(FilterChipDefaults.IconSize)
-                            )
-                        }
-                    } else null
-                )
-                FilterChip(
-                    onClick = onMedicineFilterToggle,
-                    label = { Text("Show Medicine") },
-                    selected = isMedicineFiltered,
-                    leadingIcon = if (isMedicineFiltered) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Done,
-                                contentDescription = "Done icon",
-                                modifier = Modifier.size(FilterChipDefaults.IconSize)
-                            )
-                        }
-                    } else null
-                )
-                FilterChip(
-                    onClick = onFoodFilterToggle,
-                    label = { Text("Show Food") },
-                    selected = isFoodFiltered,
-                    leadingIcon = if (isFoodFiltered) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Done,
-                                contentDescription = "Done icon",
-                                modifier = Modifier.size(FilterChipDefaults.IconSize)
-                            )
-                        }
-                    } else null
-                )
-                FilterChip(
-                    onClick = onShelterFilterToggle,
-                    label = { Text("Show Shelters") },
-                    selected = isShelterFiltered,
-                    leadingIcon = if (isShelterFiltered) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Done,
-                                contentDescription = "Done icon",
-                                modifier = Modifier.size(FilterChipDefaults.IconSize)
-                            )
-                        }
-                    } else null
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(onClick = onClose) {
-                    Text("Close")
-                }
-            }
+            DropdownMenuItem(
+                text = {
+                    FilterChip(
+                        onClick = {
+                            onZombiesFilterToggle()
+                            expanded = false // Close menu after selecting
+                        },
+                        label = { Text("Show Zombies") },
+                        selected = isZombiesFiltered,
+                        leadingIcon = if (isZombiesFiltered) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = "Done icon",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null
+                    )
+                },
+                onClick = {} // No action; handled inside the FilterChip
+            )
+            DropdownMenuItem(
+                text = {
+                    FilterChip(
+                        onClick = {
+                            onMedicineFilterToggle()
+                            expanded = false
+                        },
+                        label = { Text("Show Medicine") },
+                        selected = isMedicineFiltered,
+                        leadingIcon = if (isMedicineFiltered) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = "Done icon",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null
+                    )
+                },
+                onClick = {}
+            )
+            DropdownMenuItem(
+                text = {
+                    FilterChip(
+                        onClick = {
+                            onFoodFilterToggle()
+                            expanded = false
+                        },
+                        label = { Text("Show Food") },
+                        selected = isFoodFiltered,
+                        leadingIcon = if (isFoodFiltered) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = "Done icon",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null
+                    )
+                },
+                onClick = {}
+            )
+            DropdownMenuItem(
+                text = {
+                    FilterChip(
+                        onClick = {
+                            onShelterFilterToggle()
+                            expanded = false
+                        },
+                        label = { Text("Show Shelters") },
+                        selected = isShelterFiltered,
+                        leadingIcon = if (isShelterFiltered) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = "Done icon",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else null
+                    )
+                },
+                onClick = {}
+            )
         }
     }
 }
+
 
 

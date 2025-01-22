@@ -15,11 +15,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -40,9 +38,8 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
-import com.example.walkingundead.utilities.ChooseNumber
 import com.example.walkingundead.utilities.CurrentLocationMarker
-import com.example.walkingundead.utilities.FilterPopup
+import com.example.walkingundead.utilities.DropdownWithFilterChips
 import com.example.walkingundead.utilities.FoodMarkers
 import com.example.walkingundead.utilities.MedicineMarkers
 import com.example.walkingundead.utilities.ReportZombieDialog
@@ -80,8 +77,6 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
     var openSOSDialog by remember { mutableStateOf(false) }
     // State to control the visibility of the "Sound Grenade" dialog
     var openSoundGrenadeDialog by remember { mutableStateOf(false) }
-    var isFilterPopupVisible by remember { mutableStateOf(false) }
-    var isChooseNumberVisible by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
         val defaultLatLng = LatLng(38.736946, -9.142685) // Default location
@@ -129,15 +124,11 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
                 }
             }
         }
-        /**
-         * Android Developers. (n.d.). Chip. Retrieved January 18, 2025, from
-         * https://developer.android.com/develop/ui/compose/components/chip
-         */
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.primary)
-                .padding(top = 8.dp, bottom = 12.dp),
+                .padding(top = 8.dp, bottom = 25.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -175,17 +166,8 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
             if (openSOSDialog) {
                 SOSDialog(
                     onNo = { openSOSDialog = false },
-                    onYes = {
-                        openSOSDialog = false
-                        isChooseNumberVisible = true
-                    }
-                )
-            }
+                    onYes = { context, phoneNumber ->
 
-            if(isChooseNumberVisible) {
-                ChooseNumber(
-                    onCancel = { isChooseNumberVisible = false },
-                    onCall = { context, phoneNumber ->
                         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                             // Permission granted, make the call
                             val intent = Intent(Intent.ACTION_CALL).apply {
@@ -202,13 +184,8 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
                     }
                 )
             }
-
-            // The main menu UI
-            IconButton(onClick = { isFilterPopupVisible = true }) {
-                Icon(imageVector = Icons.Default.FilterList, contentDescription = "Filter")
-            }
             ElevatedButton(onClick = { openSoundGrenadeDialog = true }) {
-                Text("Sound Grenade")
+                Text("Sound")
             }
 
             // Show the dialog when openReportDialog is true
@@ -248,19 +225,25 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
                     }
                 )
             }
-            if (isFilterPopupVisible) {
-                FilterPopup(
-                    isZombiesFiltered = isZombiesFiltered,
-                    isMedicineFiltered = isMedicineFiltered,
-                    isFoodFiltered = isFoodFiltered,
-                    isShelterFiltered = isShelterFiltered,
-                    onZombiesFilterToggle = { isZombiesFiltered = !isZombiesFiltered },
-                    onMedicineFilterToggle = { isMedicineFiltered = !isMedicineFiltered },
-                    onFoodFilterToggle = { isFoodFiltered = !isFoodFiltered },
-                    onShelterFilterToggle = { isShelterFiltered = !isShelterFiltered },
-                    onClose = { isFilterPopupVisible = false }
-                )
-            }
+        }
+    }
+    Column(
+        Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.End
+    ){
+        Box (Modifier.background(MaterialTheme.colorScheme.primary).size(50.dp)) {
+            DropdownWithFilterChips(
+                isZombiesFiltered = isZombiesFiltered,
+                isMedicineFiltered = isMedicineFiltered,
+                isFoodFiltered = isFoodFiltered,
+                isShelterFiltered = isShelterFiltered,
+                onZombiesFilterToggle = { isZombiesFiltered = !isZombiesFiltered },
+                onMedicineFilterToggle = { isMedicineFiltered = !isMedicineFiltered },
+                onFoodFilterToggle = { isFoodFiltered = !isFoodFiltered },
+                onShelterFilterToggle = { isShelterFiltered = !isShelterFiltered },
+            )
         }
     }
 }
