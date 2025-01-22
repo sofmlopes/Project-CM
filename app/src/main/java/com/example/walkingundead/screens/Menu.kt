@@ -94,12 +94,6 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
         database.getAllZombies { fetchedReports -> zombieReports = fetchedReports }
     }
 
-    LaunchedEffect(selectedMedicineLocation) {
-        selectedMedicineLocation?.let {
-            cameraPositionState.position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(it, 15f)
-        }
-    }
-
     Column(
         Modifier
             .fillMaxSize()

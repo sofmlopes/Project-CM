@@ -198,8 +198,8 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
                         MedicineItem(
                             medicine = medicine,
                             onClick = {
-                                val location = parseLocation(medicine.location)
-                                onMedicineSelected(location) // Notify parent about selection
+                                val tempLocation = parseLocation(medicine.location)
+                                onMedicineSelected(tempLocation) // Notify parent about selection
                             }
                         )
                     }
