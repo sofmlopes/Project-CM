@@ -17,7 +17,7 @@ import com.example.walkingundead.screens.SkillsPickerScreen
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
-fun NavGraph(navController: NavHostController, currentLocation: LatLng?) {
+fun NavGraph(navController: NavHostController, currentLocation: LatLng?, onLogout: () -> Unit) {
 
     NavHost(
         navController = navController,
@@ -104,7 +104,12 @@ fun NavGraph(navController: NavHostController, currentLocation: LatLng?) {
         }
 
         composable(route = Screens.Authentication.route) {
-            Authentication()
+            Authentication(
+                onLogin = {
+
+                },
+                onLogout = onLogout
+            )
         }
     }
 }

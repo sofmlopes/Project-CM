@@ -50,6 +50,8 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.ktx.auth
 import android.Manifest
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.example.walkingundead.utilities.WalkingUndeadLogo
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +68,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             WalkingUnDeadTheme {
                 val authRepository = remember { RepositoryProvider.authRepository }
+                var authenticated by remember { mutableStateOf(authRepository.isAuthenticated()) }
                 val navController = rememberNavController()
                 RepositoryProvider.setNavController(navController)
                 val currentLocationState = remember { mutableStateOf<LatLng?>(null) }
@@ -75,7 +78,7 @@ class MainActivity : ComponentActivity() {
                     currentLocationState.value = LatLng(location.latitude, location.longitude)
                 }
 
-                if (authRepository.isAuthenticated()) {
+                if (authenticated) {
                     CustomScaffold(
                         content = {
                             Column {
@@ -98,12 +101,19 @@ class MainActivity : ComponentActivity() {
                                             }
                                     )
                                 }
-                                NavGraph(navController = navController, currentLocation = currentLocationState.value)
+                                NavGraph(navController = navController, currentLocation = currentLocationState.value, onLogout = {authenticated = false})
                             }
                         }
                     )
                 } else {
-                    Authentication()
+                    Authentication(
+                        onLogin = {
+                            authenticated = true
+                        },
+                        onLogout = {
+                            authenticated = false
+                        }
+                    )
                 }
             }
         }

@@ -204,7 +204,7 @@ class DatabaseService {
 
                 // Find the profile with the matching email
                 val matchingProfile = profiles.find { it.email == email }
-                listener(matchingProfile?.contacts?.toList())
+                listener(matchingProfile?.contacts!!.toList())
             }
 
             override fun onCancelled(error: DatabaseError) {
