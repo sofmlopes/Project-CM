@@ -50,6 +50,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.ktx.auth
 import android.Manifest
+import com.example.walkingundead.utilities.WalkingUndeadLogo
 
 class MainActivity : ComponentActivity() {
 
@@ -79,9 +80,12 @@ class MainActivity : ComponentActivity() {
                         content = {
                             Column {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().background(Color(0xFFF3F3F3)),
-                                    horizontalArrangement = Arrangement.End,
+                                    modifier = Modifier.fillMaxWidth().background(Color(0xFFF3F3F3))
+                                        .padding(horizontal=15.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+
                                 ) {
+                                    WalkingUndeadLogo()
                                     Icon(
                                         Icons.Default.AccountCircle,
                                         contentDescription = "Profile Icon",
