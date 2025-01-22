@@ -38,6 +38,7 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.ChooseNumber
 import com.example.walkingundead.utilities.CurrentLocationMarker
 import com.example.walkingundead.utilities.DropdownWithFilterChips
 import com.example.walkingundead.utilities.FoodMarkers
@@ -77,6 +78,7 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
     var openSOSDialog by remember { mutableStateOf(false) }
     // State to control the visibility of the "Sound Grenade" dialog
     var openSoundGrenadeDialog by remember { mutableStateOf(false) }
+    var isChooseNumberVisible by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
         val defaultLatLng = LatLng(38.736946, -9.142685) // Default location
@@ -166,8 +168,17 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
             if (openSOSDialog) {
                 SOSDialog(
                     onNo = { openSOSDialog = false },
-                    onYes = { context, phoneNumber ->
+                    onYes = {
+                        openSOSDialog = false
+                        isChooseNumberVisible = true
+                    }
+                )
+            }
 
+            if(isChooseNumberVisible) {
+                ChooseNumber(
+                    onCancel = { isChooseNumberVisible = false },
+                    onCall = { context, phoneNumber ->
                         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                             // Permission granted, make the call
                             val intent = Intent(Intent.ACTION_CALL).apply {
@@ -184,6 +195,7 @@ fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
                     }
                 )
             }
+
             ElevatedButton(onClick = { openSoundGrenadeDialog = true }) {
                 Text("Sound")
             }

@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
@@ -36,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,10 +57,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.walkingundead.R
+import com.example.walkingundead.models.Contact
 import com.example.walkingundead.models.Food
 import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
+import com.example.walkingundead.provider.RepositoryProvider
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.Marker
@@ -132,10 +138,7 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit, onYes: (LatLng
  * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
  */
 @Composable
-fun SOSDialog(onNo: () -> Unit,  onYes: (Context, String) -> Unit) {
-
-    val context = LocalContext.current
-    val emergencyNumber = "934051473"
+fun SOSDialog(onNo: () -> Unit, onYes: () -> Unit) {
 
     Dialog(onDismissRequest = onNo) {
         // Draw a rectangle shape with rounded corners inside the dialog
@@ -174,11 +177,10 @@ fun SOSDialog(onNo: () -> Unit,  onYes: (Context, String) -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    //horizontalArrangement = Arrangement.Center,
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(
-                        onClick = { onYes(context,emergencyNumber) },
+                        onClick = { onYes() },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("YES")
@@ -190,6 +192,109 @@ fun SOSDialog(onNo: () -> Unit,  onYes: (Context, String) -> Unit) {
                         Text("NO")
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChooseNumber(onCancel: () -> Unit, onCall: (Context, String) -> Unit) {
+
+    val database = RepositoryProvider.databaseRepository
+    val authRepository = RepositoryProvider.authRepository
+
+    var contactsList by remember { mutableStateOf<List<Contact>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
+            contactsList = fetchedContacts
+        }
+    }
+
+    Dialog(onDismissRequest = onCancel) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+            ) {
+                // Title
+                Text(
+                    text = "EMERGENCY CALL",
+                    color = colorResource(id = R.color.purple_500),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+
+                // Subtitle
+                Text(
+                    text = "Choose the phone number to call",
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+
+                // Scrollable list of contacts
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 8.dp),
+                ) {
+                    contactsList.forEach { contact ->
+                        SOSContactItem(
+                            contact = contact,
+                            onCall = { context, phoneNumber ->
+                                onCall(context, phoneNumber)
+                            }
+                        )
+                    }
+                }
+
+                // Cancel button at the bottom
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(
+                        onClick = onCancel,
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("CANCEL")
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun SOSContactItem(contact: Contact, onCall: (Context, String) -> Unit) {
+
+    val database = RepositoryProvider.databaseRepository
+    val context = LocalContext.current
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(600.dp)
+            .padding(vertical = 4.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(contact.name ?: "Unknown", fontWeight = FontWeight.Bold)
+            Text(contact.number ?: "No number")
+        }
+        Button(onClick = {onCall(context, contact.number?: "")}) {
+            Row {
+                Text("Call")
+                Icon(Icons.Default.Call, "Call")
             }
         }
     }

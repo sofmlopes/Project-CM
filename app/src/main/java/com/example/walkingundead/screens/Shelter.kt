@@ -146,19 +146,6 @@ fun Shelter() {
                     )
                     Text("Sort")
                 }
-
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = { }
-                ) {
-                    Icon(
-                        Icons.Default.Build,
-                        contentDescription = "Filter"
-                    )
-                    Text("Filter")
-                }
             }
 
             Row(
