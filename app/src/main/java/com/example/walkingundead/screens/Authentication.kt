@@ -44,6 +44,7 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Skill
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.ContactItem
 import com.example.walkingundead.utilities.WalkingUndeadLogo
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -62,10 +63,15 @@ fun Authentication() {
     var passwordVisible by remember { mutableStateOf(false) }
     var authenticated by remember { mutableStateOf(authRepository.isAuthenticated()) }
     var selectedSkillsList by remember { mutableStateOf<List<Skill>>(emptyList()) }
+    var contactsList by remember { mutableStateOf<List<Contact>>(emptyList()) }
     var isContactPopupVisible by remember { mutableStateOf(false) }
     val database = RepositoryProvider.databaseRepository
 
+
     LaunchedEffect(Unit) {
+        database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
+            contactsList = fetchedContacts
+        }
         database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
             selectedSkillsList = fetchedSkills
         }
@@ -274,14 +280,6 @@ fun Authentication() {
             Dialog(onDismissRequest = { isContactPopupVisible = false }) {
                 var newContactName by remember { mutableStateOf("") }
                 var newContactNumber by remember { mutableStateOf("") }
-                var contactsList by remember { mutableStateOf<List<Contact>>(emptyList()) }
-
-
-                LaunchedEffect(Unit) {
-                    database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
-                        contactsList = fetchedContacts
-                    }
-                }
 
                 Box(
                     modifier = Modifier
@@ -303,29 +301,7 @@ fun Authentication() {
                             Text("No contacts available", color = Color.Gray)
                         } else {
                             contactsList.forEach { contact ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp)
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(contact.name ?: "Unknown", fontWeight = FontWeight.Bold)
-                                        Text(contact.number ?: "No number")
-                                    }
-                                    IconButton(onClick = {
-                                        // todo Remove contact
-                                    }) {
-                                        Icon(Icons.Default.Lock, contentDescription = "Remove contact")
-                                    }
-                                    IconButton(onClick = {
-                                        // todo Edit contact
-                                        newContactName = contact.name ?: ""
-                                        newContactNumber = contact.number ?: ""
-                                    }) {
-                                        Icon(Icons.Default.Lock, contentDescription = "Edit contact")
-                                    }
-                                }
+                                ContactItem(contact)
                             }
                         }
 
