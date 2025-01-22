@@ -75,7 +75,7 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
     // Sort options
     // This serves as the default sorting option when the screen is first displayed.
-    var sortBy by remember { mutableStateOf("Name") }
+    var sortBy by remember { mutableStateOf("Quantity") }
 
     LaunchedEffect(Unit) {
         database.getAllMedicines { fetchedMedicines ->
@@ -84,7 +84,7 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
     }
 
     val filteredMedicines = filterMedicinesOnSearch(medicines, searchQuery, context)
-    var sortedMedicines = sortMedicines(filteredMedicines,sortBy)
+    val sortedMedicines = sortMedicines(filteredMedicines,sortBy)
 
     Box(
         modifier = Modifier
@@ -147,7 +147,6 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
                 if (sortedMedicines.isEmpty()) {
                     Text("No medicines available", color = Color.DarkGray)
                 } else {
-                    //sortedMedicines = sortedMedicines.sortedBy { it.quantity } //ASSIM funciona wtf
                     sortedMedicines.forEach { medicine ->
                         MedicineItem(
                             medicine = medicine,
