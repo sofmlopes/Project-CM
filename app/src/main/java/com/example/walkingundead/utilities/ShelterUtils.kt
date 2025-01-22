@@ -66,7 +66,7 @@ fun ShelterItem(shelter: Shelter) {
                 style = TextStyle(color = Color.DarkGray)
             )
             Text(
-                text = "Location: ${shelter.location}",
+                text = "Location: $address",
                 style = TextStyle(color = Color.DarkGray)
             )
         }
