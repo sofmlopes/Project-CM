@@ -378,6 +378,15 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                                 Contact(name = newContactName, number = newContactNumber),
                             )
                             isContactPopupVisible = false
+
+                            database.getContactsByEmail(authRepository.getEmail()) { fetchedContacts ->
+                                if (fetchedContacts != null) {
+                                    contactsList = fetchedContacts
+                                }
+                            }
+                            database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
+                                selectedSkillsList = fetchedSkills
+                            }
                         }) {
                             Text("Add Contact")
                         }

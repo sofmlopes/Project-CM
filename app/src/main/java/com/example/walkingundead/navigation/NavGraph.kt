@@ -21,7 +21,7 @@ fun NavGraph(navController: NavHostController, currentLocation: LatLng?, onLogou
 
     NavHost(
         navController = navController,
-        startDestination = Screens.Menu.route
+        startDestination = Screens.Skills.route
     )
     {
         composable(route = Screens.Skills.route) {
