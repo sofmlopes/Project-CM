@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -88,35 +89,35 @@ fun Authentication() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             //If logged in just show email and option to logout
             if (authenticated) {
 
-                Image(
-                    painter = painterResource(id = R.drawable.default_user),
-                    contentDescription = "Profile Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(RoundedCornerShape(60.dp)),
-                    contentScale = ContentScale.Crop
-                )
-
-                Spacer(Modifier.height(15.dp))
-
-                val robotoFamily = FontFamily.Default
-
-                Text(
-                    "Authenticated as ${authRepository.getEmail()}",
-                    style = TextStyle(
-                        fontFamily = robotoFamily, // Example font family (you can use custom fonts)
-                        fontWeight = FontWeight.Bold,  // Bold text
-                        fontSize = 20.sp,              // Font size
-                        letterSpacing = 1.5.sp,        // Letter spacing (spacing between characters)
-                        color = Color.Black           // Text color
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.default_user),
+                        contentDescription = "Profile Image",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(60.dp)),
+                        contentScale = ContentScale.Crop
                     )
-                )
 
-                Spacer(Modifier.height(25.dp))
+                    val robotoFamily = FontFamily.Default
+
+                    Text(
+                        authRepository.getEmail(),
+                        style = TextStyle(
+                            fontFamily = robotoFamily, // Example font family (you can use custom fonts)
+                            fontWeight = FontWeight.Bold,  // Bold text
+                            fontSize = 20.sp,              // Font size
+                            letterSpacing = 1.5.sp,        // Letter spacing (spacing between characters)
+                            color = Color.Black           // Text color
+                        )
+                    )
+
+                }
 
                 // Display selected skills
                 Text(
@@ -272,8 +273,57 @@ fun Authentication() {
                 }
             }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // List of Skills
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Skills",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (selectedSkillsList.isEmpty()) {
+                        Text("No skills selected", color = Color.Gray)
+                    } else {
+                        selectedSkillsList.forEach { skill ->
+                            Text(skill.name ?: "Unnamed Skill")
+                        }
+                    }
+                }
+
+
+                // List of Emergency Contacts
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Contacts",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (contactsList.isEmpty()) {
+                        Text("No contacts available", color = Color.Gray)
+                    } else {
+                        contactsList.forEach { contact ->
+                            Text("${contact.name}: ${contact.number}")
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(50.dp))
         }
+
 
         // Dialog to manage contacts
         if (isContactPopupVisible) {

@@ -84,7 +84,7 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
     }
 
     val filteredMedicines = filterMedicinesOnSearch(medicines, searchQuery, context)
-    val sortedMedicines = sortMedicines(filteredMedicines,sortBy)
+    var sortedMedicines = sortMedicines(filteredMedicines,sortBy)
 
     Box(
         modifier = Modifier
@@ -144,9 +144,10 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
                     .background(Color.LightGray, RoundedCornerShape(8.dp))
                     .padding(all = 10.dp)
             ) {
-                if (filteredMedicines.isEmpty()) {
+                if (sortedMedicines.isEmpty()) {
                     Text("No medicines available", color = Color.DarkGray)
                 } else {
+                    //sortedMedicines = sortedMedicines.sortedBy { it.quantity } //ASSIM funciona wtf
                     sortedMedicines.forEach { medicine ->
                         MedicineItem(
                             medicine = medicine,
