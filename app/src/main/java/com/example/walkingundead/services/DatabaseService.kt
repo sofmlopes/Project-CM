@@ -16,7 +16,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 
 class DatabaseService {
-
+    //Profile
     fun addNewProfileEntry(name: String, email: String, skills: MutableList<Skill>) {
         val profileEntry = Profile(
             email = email,
@@ -57,6 +57,19 @@ class DatabaseService {
         })
     }
 
+    fun editProfileEntry(id: Int, updatedEntry: Profile) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles").child(id.toString())
+
+        dbReference.setValue(updatedEntry)
+            .addOnSuccessListener {
+                Log.d("FirebaseUpdate", "Successfully updated profile entry")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpdate", "Failed to update profile entry", exception)
+            }
+    }
+
+    //Skills
     fun getProfileSkills(email: String, listener: (List<Skill>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -156,6 +169,7 @@ class DatabaseService {
             })
     }
 
+    //Contacts
     fun getProfileContacts(email: String, listener: (List<Contact>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -165,7 +179,7 @@ class DatabaseService {
                     val contacts = mutableListOf<Contact>()
                     for (data in snapshot.children) {
                         val profile = data.getValue(Profile::class.java)
-                        if (profile != null && profile.skills.isNotEmpty()) {
+                        if (profile != null) {
                             contacts.addAll(profile.contacts)
                         }
                     }
@@ -215,18 +229,32 @@ class DatabaseService {
             })
     }
 
-    fun editProfileEntry(id: Int, updatedEntry: Profile) {
-        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles").child(id.toString())
+    fun removeContact(email: String, contactToRemove: Contact) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
-        dbReference.setValue(updatedEntry)
-            .addOnSuccessListener {
-                Log.d("FirebaseUpdate", "Successfully updated profile entry")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("FirebaseUpdate", "Failed to update profile entry", exception)
-            }
+        dbReference.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (data in snapshot.children) {
+                        val profile = data.getValue(Profile::class.java)
+                        if (profile != null) {
+                            val contacts = profile.contacts.toMutableList()
+                            if (contacts.remove(contactToRemove)) {
+                                // Update the contacts in Firebase
+                                data.ref.child("contacts").setValue(contacts)
+                            }
+                            return
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error removing contact for profile with email $email", error.toException())
+                }
+            })
     }
 
+    //Medicine
     fun addNewMedicineEntry(name: String, type: String, location: String, quantity: Int) {
         val medicineEntry = MedicineEntry(
             name = name,
@@ -294,6 +322,7 @@ class DatabaseService {
             }
     }
 
+    //Shelter
     fun addNewShelter(name: String, location: String, nrOfBeds: Int, occupiedBeds: Int) {
         val shelter = Shelter(
             name = name,
@@ -390,6 +419,7 @@ class DatabaseService {
 
     }
 
+    //Food
     fun addNewFoodEntry(name: String, type: String, location: String, quantity: Int, expirationDate : String) {
         val foodEntry = Food(
             name = name,

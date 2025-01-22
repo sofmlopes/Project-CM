@@ -75,7 +75,7 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
     // Sort options
     // This serves as the default sorting option when the screen is first displayed.
-    var sortBy by remember { mutableStateOf("Name") }
+    var sortBy by remember { mutableStateOf("Quantity") }
 
     LaunchedEffect(Unit) {
         database.getAllMedicines { fetchedMedicines ->
@@ -144,7 +144,7 @@ fun Medicine(onMedicineSelected: (LatLng?) -> Unit) {
                     .background(Color.LightGray, RoundedCornerShape(8.dp))
                     .padding(all = 10.dp)
             ) {
-                if (filteredMedicines.isEmpty()) {
+                if (sortedMedicines.isEmpty()) {
                     Text("No medicines available", color = Color.DarkGray)
                 } else {
                     sortedMedicines.forEach { medicine ->

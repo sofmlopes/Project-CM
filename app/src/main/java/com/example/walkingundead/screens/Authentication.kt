@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -44,6 +45,7 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Skill
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.ContactItem
 import com.example.walkingundead.utilities.WalkingUndeadLogo
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -62,10 +64,15 @@ fun Authentication() {
     var passwordVisible by remember { mutableStateOf(false) }
     var authenticated by remember { mutableStateOf(authRepository.isAuthenticated()) }
     var selectedSkillsList by remember { mutableStateOf<List<Skill>>(emptyList()) }
+    var contactsList by remember { mutableStateOf<List<Contact>>(emptyList()) }
     var isContactPopupVisible by remember { mutableStateOf(false) }
     val database = RepositoryProvider.databaseRepository
 
+
     LaunchedEffect(Unit) {
+        database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
+            contactsList = fetchedContacts
+        }
         database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
             selectedSkillsList = fetchedSkills
         }
@@ -82,35 +89,35 @@ fun Authentication() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             //If logged in just show email and option to logout
             if (authenticated) {
 
-                Image(
-                    painter = painterResource(id = R.drawable.default_user),
-                    contentDescription = "Profile Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(RoundedCornerShape(60.dp)),
-                    contentScale = ContentScale.Crop
-                )
-
-                Spacer(Modifier.height(15.dp))
-
-                val robotoFamily = FontFamily.Default
-
-                Text(
-                    "Authenticated as ${authRepository.getEmail()}",
-                    style = TextStyle(
-                        fontFamily = robotoFamily, // Example font family (you can use custom fonts)
-                        fontWeight = FontWeight.Bold,  // Bold text
-                        fontSize = 20.sp,              // Font size
-                        letterSpacing = 1.5.sp,        // Letter spacing (spacing between characters)
-                        color = Color.Black           // Text color
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.default_user),
+                        contentDescription = "Profile Image",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(60.dp)),
+                        contentScale = ContentScale.Crop
                     )
-                )
 
-                Spacer(Modifier.height(25.dp))
+                    val robotoFamily = FontFamily.Default
+
+                    Text(
+                        authRepository.getEmail(),
+                        style = TextStyle(
+                            fontFamily = robotoFamily, // Example font family (you can use custom fonts)
+                            fontWeight = FontWeight.Bold,  // Bold text
+                            fontSize = 20.sp,              // Font size
+                            letterSpacing = 1.5.sp,        // Letter spacing (spacing between characters)
+                            color = Color.Black           // Text color
+                        )
+                    )
+
+                }
 
                 // Display selected skills
                 Text(
@@ -266,22 +273,63 @@ fun Authentication() {
                 }
             }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // List of Skills
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Skills",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (selectedSkillsList.isEmpty()) {
+                        Text("No skills selected", color = Color.Gray)
+                    } else {
+                        selectedSkillsList.forEach { skill ->
+                            Text(skill.name ?: "Unnamed Skill")
+                        }
+                    }
+                }
+
+
+                // List of Emergency Contacts
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Contacts",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (contactsList.isEmpty()) {
+                        Text("No contacts available", color = Color.Gray)
+                    } else {
+                        contactsList.forEach { contact ->
+                            Text("${contact.name}: ${contact.number}")
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(50.dp))
         }
+
 
         // Dialog to manage contacts
         if (isContactPopupVisible) {
             Dialog(onDismissRequest = { isContactPopupVisible = false }) {
                 var newContactName by remember { mutableStateOf("") }
                 var newContactNumber by remember { mutableStateOf("") }
-                var contactsList by remember { mutableStateOf<List<Contact>>(emptyList()) }
-
-
-                LaunchedEffect(Unit) {
-                    database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
-                        contactsList = fetchedContacts
-                    }
-                }
 
                 Box(
                     modifier = Modifier
@@ -303,29 +351,7 @@ fun Authentication() {
                             Text("No contacts available", color = Color.Gray)
                         } else {
                             contactsList.forEach { contact ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp)
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(contact.name ?: "Unknown", fontWeight = FontWeight.Bold)
-                                        Text(contact.number ?: "No number")
-                                    }
-                                    IconButton(onClick = {
-                                        // todo Remove contact
-                                    }) {
-                                        Icon(Icons.Default.Lock, contentDescription = "Remove contact")
-                                    }
-                                    IconButton(onClick = {
-                                        // todo Edit contact
-                                        newContactName = contact.name ?: ""
-                                        newContactNumber = contact.number ?: ""
-                                    }) {
-                                        Icon(Icons.Default.Lock, contentDescription = "Edit contact")
-                                    }
-                                }
+                                ContactItem(contact)
                             }
                         }
 
