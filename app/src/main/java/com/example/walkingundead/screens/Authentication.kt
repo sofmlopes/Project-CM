@@ -70,7 +70,7 @@ fun Authentication() {
 
     if (authRepository.isAuthenticated()) {
         LaunchedEffect(Unit) {
-            database.getProfileContacts(authRepository.getEmail()) { fetchedContacts ->
+            database.getContactsByEmail(authRepository.getEmail()) { fetchedContacts ->
                 contactsList = fetchedContacts
             }
             database.getProfileSkills(authRepository.getEmail()) { fetchedSkills ->
@@ -275,32 +275,33 @@ fun Authentication() {
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // List of Skills
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(8.dp)
+            if (authenticated) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Skills",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    if (selectedSkillsList.isEmpty()) {
-                        Text("No skills selected", color = Color.Gray)
-                    } else {
-                        selectedSkillsList.forEach { skill ->
-                            Text(skill.name ?: "Unnamed Skill")
+                    // List of Skills
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Skills",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        if (selectedSkillsList.isEmpty()) {
+                            Text("No skills selected", color = Color.Gray)
+                        } else {
+                            selectedSkillsList.forEach { skill ->
+                                Text(skill.name ?: "Unnamed Skill")
+                            }
                         }
                     }
-                }
 
-                if (authenticated) {
+
                     // List of Emergency Contacts
                     Column(
                         modifier = Modifier

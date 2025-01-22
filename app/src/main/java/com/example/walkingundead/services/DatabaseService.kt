@@ -192,6 +192,28 @@ class DatabaseService {
             })
     }
 
+    fun getContactsByEmail(email: String, listener: (List<Contact>?) -> Unit) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val profiles = snapshot.children.mapNotNull { data ->
+                    val profile = data.getValue(Profile::class.java)
+                    profile?.apply { id = data.key?.toIntOrNull() }
+                }
+
+                // Find the profile with the matching email
+                val matchingProfile = profiles.find { it.email == email }
+                listener(matchingProfile?.contacts?.toList())
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching profiles", error.toException())
+                listener(null) // Return null if there's an error
+            }
+        })
+    }
+
     fun addContactToProfile(email: String, contact: Contact) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
