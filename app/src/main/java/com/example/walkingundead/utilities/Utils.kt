@@ -6,6 +6,12 @@ import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.util.Log
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -61,5 +67,31 @@ fun getAddressFromCoordinates(
     } catch (e: Exception) {
         Log.e("GeocoderError", "Error retrieving address", e)
         null
+    }
+}
+
+@Composable
+fun WalkingUndeadLogo() {
+    Row {
+        Text(
+            text = "Walking ",
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+        )
+
+        Text(
+            text = "Un",
+            color = Color.Red,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+        )
+
+        Text(
+            text = "Dead",
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+        )
     }
 }

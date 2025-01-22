@@ -44,6 +44,7 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.Skill
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.WalkingUndeadLogo
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.maps.android.compose.GoogleMap
@@ -364,28 +365,4 @@ fun Authentication() {
     }
 }
 
-@Composable
-fun WalkingUndeadLogo() {
-    Row {
-        Text(
-            text = "Walking ",
-            color = Color.Black,
-            fontWeight = FontWeight.Bold,
-            fontSize = 32.sp,
-        )
 
-        Text(
-            text = "Un",
-            color = Color.Red,
-            fontWeight = FontWeight.Bold,
-            fontSize = 32.sp,
-        )
-
-        Text(
-            text = "Dead",
-            color = Color.Black,
-            fontWeight = FontWeight.Bold,
-            fontSize = 32.sp,
-        )
-    }
-}

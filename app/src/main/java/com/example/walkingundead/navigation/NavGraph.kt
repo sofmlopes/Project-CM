@@ -25,12 +25,30 @@ fun NavGraph(navController: NavHostController, currentLocation: LatLng?) {
             SkillsPickerScreen()
         }
 
-        composable(Screens.Menu.route) {
-            Menu(currentLocation)
+        composable(Screens.Menu.route) { backStackEntry ->
+            val selectedMedicineLat = backStackEntry.arguments?.getString("selectedLat")?.toDoubleOrNull()
+            val selectedMedicineLng = backStackEntry.arguments?.getString("selectedLng")?.toDoubleOrNull()
+            val selectedMedicineLocation = if (selectedMedicineLat != null && selectedMedicineLng != null) {
+                LatLng(selectedMedicineLat, selectedMedicineLng)
+            } else null
+
+            Menu(
+                currentLocation = currentLocation,
+                selectedMedicineLocation = selectedMedicineLocation
+            )
         }
 
         composable(route = Screens.Medicine.route) {
-            Medicine()
+            Medicine(
+                onMedicineSelected = { selectedLocation ->
+                    // Navigate to the Menu screen and pass the location as arguments
+                    if (selectedLocation != null) {
+                        navController.navigate(
+                            "${Screens.Menu.route}?selectedLat=${selectedLocation.latitude}&selectedLng=${selectedLocation.longitude}"
+                        )
+                    }
+                }
+            )
         }
 
         composable(route = Screens.Food.route) {

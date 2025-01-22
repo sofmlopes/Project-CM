@@ -49,6 +49,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.walkingundead.R
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
+import com.example.walkingundead.utilities.ShelterItem
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -369,38 +370,3 @@ fun Shelter() {
     }
 }
 
-@Composable
-fun ShelterItem(shelter: Shelter) {
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp) //5dp = vertical space between cards
-            .background(Color.White, RoundedCornerShape(8.dp)),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        //Name and Category
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 10.dp, vertical = 20.dp)
-        ) {
-            Text(
-                text = shelter.name?:"",
-                fontWeight = FontWeight.Bold,
-                style = TextStyle(color = Color.Black)
-            )
-            Text(
-                text = "Number of free beds: ${shelter.numberOfBeds - shelter.occupiedBeds}",
-                style = TextStyle(color = Color.DarkGray)
-            )
-            Text(
-                text = "Location: ${shelter.location}",
-                style = TextStyle(color = Color.DarkGray)
-            )
-        }
-
-    }
-
-}

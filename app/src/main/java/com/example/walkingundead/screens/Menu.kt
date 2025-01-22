@@ -1,21 +1,13 @@
 package com.example.walkingundead.screens
 
 import android.app.Activity
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.location.Location
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Build
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,17 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.walkingundead.R
 import com.example.walkingundead.models.Food
@@ -67,10 +51,13 @@ import com.example.walkingundead.models.MedicineEntry
 import com.example.walkingundead.models.ReportZombie
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
-import com.example.walkingundead.utilities.AlertDetails
+import com.example.walkingundead.utilities.ReportZombieDialog
+import com.example.walkingundead.utilities.SOSDialog
+import com.example.walkingundead.utilities.SoundGrenadeDialog
 import com.example.walkingundead.utilities.isZombieNear
 import com.example.walkingundead.utilities.parseLocation
 import com.example.walkingundead.utilities.scaleBitmap
+import com.example.walkingundead.utilities.sendNotificationZombiesInTheArea
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -82,7 +69,7 @@ import com.google.maps.android.compose.rememberMarkerState
 private const val REQUEST_CALL_PERMISSION = 1
 
 @Composable
-fun Menu(currentLocation: LatLng?) {
+fun Menu(currentLocation: LatLng?, selectedMedicineLocation: LatLng?) {
 
     val database = RepositoryProvider.databaseRepository
 
@@ -103,6 +90,12 @@ fun Menu(currentLocation: LatLng?) {
     var openSoundGrenadeDialog by remember { mutableStateOf(false) }
     var isFilterPopupVisible by remember { mutableStateOf(false) }
 
+    val cameraPositionState = rememberCameraPositionState {
+        val defaultLatLng = LatLng(38.736946, -9.142685) // Default location
+        val location = selectedMedicineLocation ?: currentLocation ?: defaultLatLng
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(location, 10f)
+    }
+
     LaunchedEffect(Unit) {
         database.getAllMedicines { fetchedMedicines -> medicines = fetchedMedicines }
         database.getAllFoods { fetchedFoods-> foods = fetchedFoods }
@@ -110,10 +103,10 @@ fun Menu(currentLocation: LatLng?) {
         database.getAllZombies { fetchedReports -> zombieReports = fetchedReports }
     }
 
-    val cameraPositionState = rememberCameraPositionState {
-        val defaultLatLng = LatLng(38.736946, -9.142685) // Default location
-        val location = currentLocation ?: defaultLatLng
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(location, 10f)
+    LaunchedEffect(selectedMedicineLocation) {
+        selectedMedicineLocation?.let {
+            cameraPositionState.position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(it, 15f)
+        }
     }
 
     Column(
@@ -153,6 +146,7 @@ fun Menu(currentLocation: LatLng?) {
                         }
                     }
                 }
+
                 // Add food markers
                 foods.forEach { food ->
                     if(isFoodFiltered){
@@ -325,7 +319,7 @@ fun Menu(currentLocation: LatLng?) {
                         )
 
                         // Create a new MediaPlayer instance for each playback
-                        val mediaPlayer = MediaPlayer.create(context, R.raw.loud_emergency_alarm) // Replace with your file name in res/raw
+                        val mediaPlayer = MediaPlayer.create(context, R.raw.loud_emergency_alarm)
 
                         // Start playing the sound
                         mediaPlayer.start()
@@ -447,253 +441,4 @@ fun Menu(currentLocation: LatLng?) {
         }
     }
 }
-
-/**
- * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
- * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
- */
-@Composable
-fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit,  onYes: (LatLng) -> Unit) {
-
-    Dialog(onDismissRequest = onNo) {
-        // Draw a rectangle shape with rounded corners inside the dialog
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(375.dp)
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "REPORT ZOMBIE",
-                    color = colorResource(id = R.color.purple_500),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp),
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.zombie_marker),
-                    contentDescription = "Zombie Image in Report Zombie dialog",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(100.dp)
-                )
-                Text(
-                    text = "Are you sure you want to \n" +
-                            "report Zombies in your current \n" +
-                            "location (3km range)?",
-                    modifier = Modifier.padding(16.dp),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    //horizontalArrangement = Arrangement.Center,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = { onYes(currentLocation) },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("YES")
-                    }
-                    TextButton(
-                        onClick = { onNo() },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("NO")
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
- * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
- */
-@Composable
-fun SOSDialog(onNo: () -> Unit,  onYes: (Context,String) -> Unit) {
-
-    val context = LocalContext.current
-    val emergencyNumber = "934051473"
-
-    Dialog(onDismissRequest = onNo) {
-        // Draw a rectangle shape with rounded corners inside the dialog
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(375.dp)
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "EMERGENCY CALL",
-                    color = colorResource(id = R.color.purple_500),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp),
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.sos_icon),
-                    contentDescription = "SOS icon in SOS dialog",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(50.dp)
-                )
-                Text(
-                    text = "Are you sure you want to share \n" +
-                            "your location with your \n" +
-                            "emergency contacts?",
-                    modifier = Modifier.padding(16.dp),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    //horizontalArrangement = Arrangement.Center,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = { onYes(context,emergencyNumber) },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("YES")
-                    }
-                    TextButton(
-                        onClick = { onNo() },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("NO")
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
- * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
- */
-@Composable
-fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
-
-    val context = LocalContext.current
-
-    Dialog(onDismissRequest = onNo) {
-        // Draw a rectangle shape with rounded corners inside the dialog
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(375.dp)
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "SOUND GRENADE",
-                    color = colorResource(id = R.color.purple_500),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp)
-                )
-                Image(
-                    painter = painterResource(id = R.drawable.sound_grenade_icon),
-                    contentDescription = "Sound Grenade icon in Sound Grenade dialog",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(100.dp)
-                )
-                Text(
-                    text = "Are you sure you want to emit \n" +
-                            "a loud sound to distract the \n" +
-                            "zombies?",
-                    modifier = Modifier.padding(16.dp),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    //horizontalArrangement = Arrangement.Center,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = { onYes(context) },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("YES")
-                    }
-                    TextButton(
-                        onClick = { onNo() },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("NO")
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Android Developers. (n.d.). Build a notification. Google. Retrieved January 15, 2025,
- * from https://developer.android.com/develop/ui/views/notifications/build-notification?hl=pt-br
- */
-fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, channel_description: String,
-                                    context : Context){
-    // Create the NotificationChannel, but only on API 26+ because
-    // the NotificationChannel class is not in the Support Library.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val importance = NotificationManager.IMPORTANCE_HIGH // High importance for heads-up notifications
-        val channel = NotificationChannel(channelId, channel_name, importance).apply {
-            description = channel_description
-        }
-        // Register the channel with the system.
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        notificationManager?.createNotificationChannel(channel)
-    }
-    // Create an explicit intent for an Activity in your app.
-    val intent = Intent(context, AlertDetails::class.java).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-    }
-    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-    val builder = NotificationCompat.Builder(context, channelId)
-        .setSmallIcon(R.drawable.zombie_marker)
-        .setContentTitle("Zombie Alert!")
-        .setContentText("A zombie has been reported near your location!")
-        .setPriority(NotificationCompat.PRIORITY_HIGH) // High priority
-        .setDefaults(NotificationCompat.DEFAULT_ALL) // Enable sound and vibration
-        // Set the intent that fires when the user taps the notification.
-        .setContentIntent(pendingIntent)
-        .setAutoCancel(true)
-
-    // Check notification permission for Android 13+ (API 33+)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        if (context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            // Permission is granted, send the notification
-            NotificationManagerCompat.from(context).notify(1, builder.build())
-        } else {
-            // Optionally, handle the case where permission is not granted
-            Log.w("Notification", "Notification permission not granted.")
-        }
-    } else {
-        // For devices below Android 13, no runtime permission is required
-        NotificationManagerCompat.from(context).notify(1, builder.build())
-    }
-}
-
 
