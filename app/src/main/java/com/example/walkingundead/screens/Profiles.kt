@@ -92,7 +92,7 @@ fun Profiles() {
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it }, // Update the search query
-                placeholder = { Text("Search Medicines", color = Color.DarkGray) },
+                placeholder = { Text("Search Profiles", color = Color.DarkGray) },
                 modifier = Modifier
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .fillMaxWidth(),
@@ -100,40 +100,7 @@ fun Profiles() {
             )
 
             Spacer(Modifier.height(5.dp))
-
-            //Sort and Filter
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = { }
-                ) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Sort"
-                    )
-                    Text("Sort")
-                }
-
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = { }
-                ) {
-                    Icon(
-                        Icons.Default.Build,
-                        contentDescription = "Filter"
-                    )
-                    Text("Filter")
-                }
-            }
-
+            
             // Profile List
             Column(
                 modifier = Modifier
