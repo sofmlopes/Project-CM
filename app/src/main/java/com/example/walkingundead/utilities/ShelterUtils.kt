@@ -53,6 +53,11 @@ import com.example.walkingundead.provider.RepositoryProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Displays shelter name, free beds, and location.
+ * Includes an "Edit" button that opens a dialog for modifying the number of free beds.
+ * The dialog allows users to increase or decrease the number of free beds and apply the changes.
+ */
 @Composable
 fun ShelterItem(shelter: Shelter, onClick: () -> Unit) {
 
@@ -60,7 +65,7 @@ fun ShelterItem(shelter: Shelter, onClick: () -> Unit) {
     val context = LocalContext.current
     var address by remember { mutableStateOf<String?>(null) }
     var isDialogVisible by remember { mutableStateOf(false) }
-    var totalBeds by remember { mutableIntStateOf(shelter.numberOfBeds) }
+    val totalBeds by remember { mutableIntStateOf(shelter.numberOfBeds) }
     var freeBeds by remember { mutableIntStateOf(shelter.numberOfBeds - shelter.occupiedBeds) }
     var tempValue by remember { mutableIntStateOf(totalBeds) } //used so changes are not immediately applied to quantity
     var textValue by remember { mutableStateOf(freeBeds.toString()) }
@@ -220,8 +225,12 @@ fun ShelterItem(shelter: Shelter, onClick: () -> Unit) {
     }
 }
 
+/**
+ * Provides sorting options for shelters by name, location, number of beds, and occupied beds.
+ *
+ */
 @Composable
-fun DropdownMenuWithDetailsShelter(onSortByName: () -> Unit, onSortByLocation: () -> Unit, onSortByNumberOfBeds: () -> Unit,
+fun DropdownMenuWithDetailsShelter(onSortByName: () -> Unit, onSortByLocation: () -> Unit, onSortByNumberOfFreeBeds: () -> Unit,
                                    onSortByNumberOfOccupiedBeds: () -> Unit) {
 
     var expanded by remember { mutableStateOf(false) }
@@ -255,10 +264,10 @@ fun DropdownMenuWithDetailsShelter(onSortByName: () -> Unit, onSortByLocation: (
                 }
             )
             DropdownMenuItem(
-                text = { Text("Sort By Number Of Beds") },
+                text = { Text("Sort By Number Of Free Beds") },
                 leadingIcon = { Icon(Icons.Outlined.SortByAlpha, contentDescription = null) },
                 onClick = {
-                    onSortByNumberOfBeds()
+                    onSortByNumberOfFreeBeds()
                     expanded = false
                 }
             )
@@ -274,6 +283,9 @@ fun DropdownMenuWithDetailsShelter(onSortByName: () -> Unit, onSortByLocation: (
     }
 }
 
+/**
+ * Allows users to search shelters based on name, location
+ */
 @Composable
 fun SearchBarShelter(searchQuery: String, onSearchQueryChange: (String) -> Unit) {
     TextField(
@@ -299,7 +311,8 @@ fun HeaderShelter() {
 }
 
 /**
- * Filter medicines based on the search query
+ * Filters the shelter list based on the search query.
+ *
  */
 @Composable
 fun filterSheltersOnSearch(shelterList: List<Shelter>, searchQuery: String, context: Context): List <Shelter>{
@@ -311,7 +324,7 @@ fun filterSheltersOnSearch(shelterList: List<Shelter>, searchQuery: String, cont
 }
 
 /**
- * Function to sort shelters based on the selected criterion
+ * Sorts the shelter list by different criteria (name, location, number of beds, occupied beds).
  */
 @Composable
 fun sortShelters(
@@ -321,7 +334,7 @@ fun sortShelters(
     return when (sortBy) {
         "Name" -> filteredShelterList.sortedBy { it.name }
         "Location" -> filteredShelterList.sortedBy { distanceToCurrentLocation(it.location) }
-        "Number Of Beds" -> filteredShelterList.sortedBy { it.numberOfBeds }
+        "Number Of Free Beds" -> filteredShelterList.sortedBy { it.numberOfBeds - it.occupiedBeds  }
         "Number Of Occupied Beds" -> filteredShelterList.sortedBy { it.occupiedBeds }
         else -> filteredShelterList
     }

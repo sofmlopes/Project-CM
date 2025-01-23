@@ -1,5 +1,6 @@
 package com.example.walkingundead
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -25,35 +26,36 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.example.walkingundead.navigation.NavGraph
 import com.example.walkingundead.navigation.Screens
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.screens.Authentication
 import com.example.walkingundead.ui.theme.WalkingUnDeadTheme
-import androidx.compose.material3.Icon
-import androidx.core.content.ContextCompat
+import com.example.walkingundead.utilities.WalkingUndeadLogo
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.auth.ktx.auth
-import android.Manifest
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import com.example.walkingundead.utilities.WalkingUndeadLogo
 
+/**
+ * Integrates location services, authentication, and a bottom navigation bar
+ */
 class MainActivity : ComponentActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -120,6 +122,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Note: Checks for location permissions but does not request them if they're not granted
+     */
     private fun fetchLocation(
         context: Context,
         onLocationReceived: (android.location.Location) -> Unit

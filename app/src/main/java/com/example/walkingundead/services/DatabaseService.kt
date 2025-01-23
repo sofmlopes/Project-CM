@@ -17,6 +17,10 @@ import com.google.firebase.ktx.Firebase
 
 class DatabaseService {
     //Profile
+
+    /**
+     * Adds a new profile to the database with a name, email, and a list of skills.
+     */
     fun addNewProfileEntry(name: String, email: String, skills: MutableList<Skill>) {
         val profileEntry = Profile(
             email = email,
@@ -34,6 +38,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     * Retrieves all profiles from the database.
+     */
     fun getAllProfiles(listener: (List<Profile>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -57,6 +64,9 @@ class DatabaseService {
         })
     }
 
+    /**
+     *  Updates an existing profile by ID with the provided updated data.
+     */
     fun editProfileEntry(id: Int, updatedEntry: Profile) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles").child(id.toString())
 
@@ -70,6 +80,10 @@ class DatabaseService {
     }
 
     //Skills
+
+    /**
+     * Retrieves the skills of a profile by email.
+     */
     fun getProfileSkills(email: String, listener: (List<Skill>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -80,7 +94,7 @@ class DatabaseService {
                     for (data in snapshot.children) {
                         val profile = data.getValue(Profile::class.java)
                         if (profile != null && profile.skills.isNotEmpty()) {
-                            skills.addAll(profile.skills!!)
+                            skills.addAll(profile.skills)
                         }
                     }
                     listener(skills) // Send the updated list of skills to the listener
@@ -92,6 +106,9 @@ class DatabaseService {
             })
     }
 
+    /**
+     * Updates the skills list of a profile with the provided new skills.
+     */
     fun updateProfileSkills(email: String, newSkills: List<Skill>) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -117,6 +134,9 @@ class DatabaseService {
             })
     }
 
+    /**
+     * Adds a skill to a profile's existing skills.
+     */
     fun addSkillToProfile(email: String, skill: Skill) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -128,7 +148,7 @@ class DatabaseService {
                             val profile = data.getValue(Profile::class.java)
                             val profileKey = data.key
                             if (profile != null && profileKey != null) {
-                                val updatedSkills = profile.skills!!.toMutableList()
+                                val updatedSkills = profile.skills.toMutableList()
                                 updatedSkills.add(skill)
                                 val updatedProfile = profile.copy(skills = updatedSkills)
 
@@ -154,6 +174,9 @@ class DatabaseService {
             })
     }
 
+    /**
+     * Removes a skill from a profile's skills.
+     */
     fun removeSkillFromProfile(email: String, skill: Skill) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -195,6 +218,10 @@ class DatabaseService {
     }
 
     //Contacts
+
+    /**
+     * Retrieves contacts for a profile by email.
+     */
     fun getProfileContacts(email: String, listener: (List<Contact>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -217,6 +244,9 @@ class DatabaseService {
             })
     }
 
+    /**
+     * Retrieves contacts by a specific email.
+     */
     fun getContactsByEmail(email: String, listener: (List<Contact>?) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -239,6 +269,9 @@ class DatabaseService {
         })
     }
 
+    /**
+     * Adds a contact to a profile.
+     */
     fun addContactToProfile(email: String, contact: Contact) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -276,6 +309,9 @@ class DatabaseService {
             })
     }
 
+    /**
+     * Removes a contact from a profile.
+     */
     fun removeContact(email: String, contactToRemove: Contact) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
@@ -302,6 +338,10 @@ class DatabaseService {
     }
 
     //Medicine
+
+    /**
+     * Adds a new medicine entry to Firebase.
+     */
     fun addNewMedicineEntry(name: String, type: String, location: String, quantity: Int) {
         val medicineEntry = MedicineEntry(
             name = name,
@@ -322,6 +362,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     * Retrieves all medicine entries and passes them to the provided listener.
+     */
     fun getAllMedicines(listener: (List<MedicineEntry>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Medicines")
 
@@ -345,6 +388,9 @@ class DatabaseService {
         })
     }
 
+    /**
+     * Updates an existing medicine entry by its ID.
+     */
     fun editMedicineEntry(id: String, updatedEntry: MedicineEntry) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Medicines").child(id)
 
@@ -357,6 +403,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     * Deletes a medicine entry by its ID.
+     */
     fun deleteMedicineEntry(id: String) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Medicines").child(id)
 
@@ -370,6 +419,10 @@ class DatabaseService {
     }
 
     //Shelter
+
+    /**
+     * Adds a new shelter entry to Firebase.
+     */
     fun addNewShelter(name: String, location: String, nrOfBeds: Int, occupiedBeds: Int) {
         val shelter = Shelter(
             name = name,
@@ -390,6 +443,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     * Retrieves all shelter entries and passes them to the provided listener.
+     */
     fun getAllShelters(listener: (List<Shelter>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Shelters")
 
@@ -413,6 +469,9 @@ class DatabaseService {
         })
     }
 
+    /**
+     * Updates an existing shelter entry by its ID.
+     */
     fun editShelter(id: String, updatedEntry: Shelter) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Shelters").child(id)
 
@@ -425,6 +484,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     * Adds a new zombie report entry to Firebase.
+     */
     fun addNewReportZombie(location: String) {
         val reportZombie = ReportZombie(
             location = location,
@@ -442,6 +504,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     * Retrieves all zombie report entries and passes them to the provided listener.
+     */
     fun getAllZombies(listener: (List<ReportZombie>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Report Zombie")
 
@@ -467,6 +532,10 @@ class DatabaseService {
     }
 
     //Food
+
+    /**
+     * Adds a new food entry to Firebase.
+     */
     fun addNewFoodEntry(name: String, type: String, location: String, quantity: Int, expirationDate : String) {
         val foodEntry = Food(
             name = name,
@@ -488,6 +557,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     * Retrieves all food entries and passes them to the provided listener.
+     */
     fun getAllFoods(listener: (List<Food>) -> Unit) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Foods")
 
@@ -511,6 +583,9 @@ class DatabaseService {
         })
     }
 
+    /**
+     * Updates an existing food entry by its ID.
+     */
     fun editFoodEntry(id: String, updatedEntry: Food) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Foods").child(id)
 
@@ -523,6 +598,9 @@ class DatabaseService {
             }
     }
 
+    /**
+     *  Deletes a food entry by its ID.
+     */
     fun deleteFoodEntry(id: String) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Foods").child(id)
 

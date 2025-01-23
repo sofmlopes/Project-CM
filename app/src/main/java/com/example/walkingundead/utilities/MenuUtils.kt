@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,7 +34,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -71,6 +69,9 @@ import com.google.maps.android.compose.rememberMarkerState
 /**
  * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
  * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
+ *  Displays a dialog for reporting zombies in the user's current location (within a 3km radius).
+ *  It asks the user to confirm if they want to report zombies, with "YES" and
+ *  "NO" buttons that trigger the respective actions.
  */
 @Composable
 fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit, onYes: (LatLng) -> Unit) {
@@ -136,6 +137,8 @@ fun ReportZombieDialog(currentLocation: LatLng, onNo: () -> Unit, onYes: (LatLng
 /**
  * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
  * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
+ * Displays a dialog asking the user if they want to share their location with emergency contacts.
+ * Contains "YES" and "NO" buttons that trigger the respective actions for calling emergency contacts.
  */
 @Composable
 fun SOSDialog(onNo: () -> Unit, onYes: () -> Unit) {
@@ -197,6 +200,11 @@ fun SOSDialog(onNo: () -> Unit, onYes: () -> Unit) {
     }
 }
 
+/**
+ * Displays a list of contacts retrieved from a database.
+ * The user can select a contact to call in case of an emergency.
+ * The user can cancel the action via a "CANCEL" button.
+ */
 @Composable
 fun ChooseNumber(onCancel: () -> Unit, onCall: (Context, String) -> Unit) {
 
@@ -220,7 +228,6 @@ fun ChooseNumber(onCancel: () -> Unit, onCall: (Context, String) -> Unit) {
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
                     .padding(16.dp),
             ) {
                 // Title
@@ -242,9 +249,9 @@ fun ChooseNumber(onCancel: () -> Unit, onCall: (Context, String) -> Unit) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
                         .verticalScroll(rememberScrollState())
                         .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.Top
                 ) {
                     contactsList.forEach { contact ->
                         SOSContactItem(
@@ -273,18 +280,20 @@ fun ChooseNumber(onCancel: () -> Unit, onCall: (Context, String) -> Unit) {
     }
 }
 
-
+/**
+ * Displays a contact's name and phone number,
+ * along with a "Call" button that, when clicked, triggers the onCall action with the contact's number.
+ * The Button is used to initiate the call, and it includes an icon alongside the text "Call."
+ */
 @Composable
 fun SOSContactItem(contact: Contact, onCall: (Context, String) -> Unit) {
 
-    val database = RepositoryProvider.databaseRepository
     val context = LocalContext.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .height(600.dp)
             .padding(vertical = 4.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -371,15 +380,15 @@ fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
  * Android Developers. (n.d.). Build a notification. Google. Retrieved January 15, 2025,
  * from https://developer.android.com/develop/ui/views/notifications/build-notification?hl=pt-br
  */
-fun sendNotificationZombiesInTheArea (channelId: String, channel_name: String, channel_description: String,
+fun sendNotificationZombiesInTheArea (channelId: String, channelName: String, channelDescription: String,
                                       context : Context
 ){
     // Create the NotificationChannel, but only on API 26+ because
     // the NotificationChannel class is not in the Support Library.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val importance = NotificationManager.IMPORTANCE_HIGH // High importance for heads-up notifications
-        val channel = NotificationChannel(channelId, channel_name, importance).apply {
-            description = channel_description
+        val channel = NotificationChannel(channelId, channelName, importance).apply {
+            description = channelDescription
         }
         // Register the channel with the system.
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager

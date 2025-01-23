@@ -2,7 +2,6 @@ package com.example.walkingundead.utilities
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.util.Log
@@ -14,8 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.walkingundead.provider.RepositoryProvider
 import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -39,12 +36,16 @@ fun isZombieNear(userLocation: LatLng, zombieLocation: LatLng, rangeInMeters: Fl
     return distance <= rangeInMeters
 }
 
-// Function to scale the bitmap to a fixed size
+/**
+ * Function to scale the bitmap to a fixed size
+ */
 fun scaleBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap {
     return Bitmap.createScaledBitmap(bitmap, width, height, false)
 }
 
-// Helper function to parse location strings into LatLng objects
+/**
+ * Helper function to parse location strings into LatLng objects
+ */
 fun parseLocation(location: String?): LatLng? {
     return try {
         val parts = location!!.split(",")
@@ -102,6 +103,9 @@ fun WalkingUndeadLogo() {
     }
 }
 
+/**
+ * Calculates the distance using the Haversine formula
+ */
 fun distanceToCurrentLocation(location: String?): Int? {
     // Check if the location string is null or empty
     if (location.isNullOrEmpty()) return null

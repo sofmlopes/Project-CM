@@ -58,6 +58,9 @@ import com.example.walkingundead.provider.RepositoryProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ *  Detailed UI for managing each food item in the app
+ */
 @Composable
 fun FoodItem(food: Food, onClick: () -> Unit) {
 
@@ -255,7 +258,9 @@ fun FoodItem(food: Food, onClick: () -> Unit) {
 }
 
 /**
- * https://developer.android.com/develop/ui/compose/components/datepickers
+ * Android Developers. (n.d.). Date pickers.
+ * Retrieved January 20, 2025, from https://developer.android.com/develop/ui/compose/components/datepickers
+ * Allows users to select a date using a material 3 DatePicker.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -286,7 +291,10 @@ fun DatePickerModal(
 }
 
 /**
- * https://developer.android.com/develop/ui/compose/components/menu?hl=pt-br
+ * Android Developers. (n.d.). Menus. Retrieved January 19, 2025,
+ * from https://developer.android.com/develop/ui/compose/components/menu?hl=pt-br
+ * Displays a dropdown menu to sort the food items
+ * by various criteria like name, type, quantity, location, or expiration date.
  */
 @Composable
 fun DropdownMenuWithDetailsFood(
@@ -356,7 +364,8 @@ fun DropdownMenuWithDetailsFood(
 }
 
 /**
- * Filter foods based on the search query
+ * Filters the list of food items based on a search query
+ * that can match name, type, location, quantity, or expiration date.
  */
 @Composable
 fun filterFoodsOnSearch (foods: List<Food>, searchQuery: String, context: Context): List<Food>{
@@ -391,7 +400,9 @@ fun filterFoodsOnSearch (foods: List<Food>, searchQuery: String, context: Contex
 }
 
 /**
- * Function to sort foods based on the selected criterion
+ * Sorts the filtered list of food items based on
+ * the selected criterion (name, type, quantity, location, or expiration date).
+ * Note: Sorting by expiration date is not working as expected
  */
 @Composable
 fun sortFoods(
@@ -420,7 +431,9 @@ fun HeaderFood (){
 }
 
 /**
- * https://developer.android.com/develop/ui/compose/text/user-input?hl=pt-br
+ * Android Developers. (n.d.). User input. Retrieved January 15, 2025,
+ * from https://developer.android.com/develop/ui/compose/text/user-input?hl=pt-br
+ * Displays a search bar to filter food items based on a query.
  */
 @Composable
 fun SearchBarFood(

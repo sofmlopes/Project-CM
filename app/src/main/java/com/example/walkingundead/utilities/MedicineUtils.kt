@@ -60,6 +60,11 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+/**
+ * Displays a medicine entry with its name, type, location, and quantity.
+ * Allows users to edit the quantity or delete the entry through a dialog.
+ * Fetches the location address asynchronously based on latitude and longitude.
+ */
 @Composable
 fun MedicineItem(medicine: MedicineEntry, onClick: () -> Unit) {
 
@@ -254,6 +259,7 @@ fun MedicineItem(medicine: MedicineEntry, onClick: () -> Unit) {
 
 /**
  * https://developer.android.com/develop/ui/compose/components/menu?hl=pt-br
+ * Provides sorting options for the list of medicines (by name, type, location, or quantity).
  */
 @Composable
 fun DropdownMenuWithDetailsMedicine(
@@ -313,6 +319,10 @@ fun DropdownMenuWithDetailsMedicine(
     }
 }
 
+/**
+ * Filters the medicine list based on the search query, including matching the name, type, location, or quantity.
+ *
+ */
 @Composable
 fun filterMedicinesOnSearch (medicines : List<MedicineEntry>, searchQuery : String, context: Context): List<MedicineEntry> {
 
@@ -346,7 +356,7 @@ fun filterMedicinesOnSearch (medicines : List<MedicineEntry>, searchQuery : Stri
 }
 
 /**
- * Function to sort medicines based on the selected criterion
+ * Sorts the filtered medicine list based on the selected criterion (name, type, quantity, or location).
  */
 @Composable
 fun sortMedicines(
@@ -375,6 +385,7 @@ fun HeaderMedicine (){
 
 /**
  * https://developer.android.com/develop/ui/compose/text/user-input?hl=pt-br
+ * Provides a search bar for filtering medicine entries based on user input.
  */
 @Composable
 fun SearchBarMedicine(

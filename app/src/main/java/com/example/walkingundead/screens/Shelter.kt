@@ -131,7 +131,7 @@ fun Shelter(onShelterSelected: (LatLng?) -> Unit) {
                 DropdownMenuWithDetailsShelter(
                     onSortByName = { sortBy = "Name" },
                     onSortByLocation = { sortBy = "Location" },
-                    onSortByNumberOfBeds = { sortBy = "Number Of Beds" },
+                    onSortByNumberOfFreeBeds = { sortBy = "Number Of Free Beds" },
                     onSortByNumberOfOccupiedBeds =  { sortBy = "Number Of Occupied Beds" },
                 )
             }

@@ -19,6 +19,9 @@ import com.example.walkingundead.models.Contact
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.provider.RepositoryProvider.authRepository
 
+/**
+ * Displays contact information and includes buttons for removing and editing contacts.
+ */
 @Composable
 fun ContactItem(contact: Contact) {
     val database = RepositoryProvider.databaseRepository

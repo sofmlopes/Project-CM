@@ -15,6 +15,11 @@ import androidx.compose.ui.unit.sp
 import com.example.walkingundead.screens.SkillsPickerScreen
 import com.example.walkingundead.ui.theme.WalkingUnDeadTheme
 
+/**
+ * Creates a visual chip component that represents a skill, allowing the user to select or deselect it.
+ * It uses a Surface to create a clickable chip that changes color when selected or deselected.
+ * The onSelect lambda is called when the chip is clicked, toggling the selection state.
+ */
 @Composable
 fun SkillChip(skill: String, isSelected: Boolean, onSelect: (Boolean) -> Unit) {
     Surface(

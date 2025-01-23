@@ -100,7 +100,7 @@ fun Profiles() {
             )
 
             Spacer(Modifier.height(5.dp))
-            
+
             // Profile List
             Column(
                 modifier = Modifier
