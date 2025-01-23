@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,14 +36,7 @@ fun ContactItem(contact: Contact) {
         IconButton(onClick = {
             database.removeContact(authRepository.getEmail(), contact)
         }) {
-            Icon(Icons.Default.Lock, contentDescription = "Remove contact")
-        }
-        IconButton(onClick = {
-            // todo Edit contact
-            //newContactName = contact.name ?: ""
-            //newContactNumber = contact.number ?: ""
-        }) {
-            Icon(Icons.Default.Lock, contentDescription = "Edit contact")
+            Icon(Icons.Default.Delete, contentDescription = "Remove contact")
         }
     }
 }
