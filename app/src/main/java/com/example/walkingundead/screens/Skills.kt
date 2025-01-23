@@ -178,6 +178,8 @@ fun SkillsPickerScreen(onSelected: () -> Unit) {
                             database.removeSkillFromProfile(currentEmail, existingSkill)
                         }
                     }
+
+                    database.updateProfileSkills(currentEmail, selectedSkillsList)
                 }
                 onSelected()
             },

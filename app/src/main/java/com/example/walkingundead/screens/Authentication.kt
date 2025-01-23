@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Search
@@ -118,27 +120,6 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                     )
                 }
 
-                // Button to open the skill picker screen
-                Button(
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = {
-                        // Logic to navigate to SkillsPickerScreen if necessary
-                        navController.navigate(Screens.Skills.route)
-                    }
-                ) {
-                    Text("Change Skills")
-                }
-
-                // Button to open the skill picker screen
-                Button(
-                    shape = RoundedCornerShape(6.dp),
-                    onClick = {
-                        isContactPopupVisible = true
-                    }
-                ) {
-                    Text("Change Emergency Contacts")
-                }
-
                 Button(
                     shape = RoundedCornerShape(6.dp),
                     onClick = {
@@ -157,6 +138,8 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                 ) {
                     Text("Log Out")
                 }
+
+                Spacer(Modifier.height(40.dp))
 
             } else {
 
@@ -270,7 +253,7 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
 
             if (authenticated) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // List of Skills
@@ -292,8 +275,18 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                                 Text(skill.name ?: "Unnamed Skill")
                             }
                         }
-                    }
 
+                        // Button to open the skill picker screen
+                        Button(
+                            shape = RoundedCornerShape(6.dp),
+                            onClick = {
+                                // Logic to navigate to SkillsPickerScreen if necessary
+                                navController.navigate(Screens.Skills.route)
+                            }
+                        ) {
+                            Text("Edit Skills")
+                        }
+                    }
 
                     // List of Emergency Contacts
                     Column(
@@ -313,6 +306,15 @@ fun Authentication(onLogin: () -> Unit, onLogout: () -> Unit) {
                             contactsList.forEach { contact ->
                                 Text("${contact.name}: ${contact.number}")
                             }
+                        }
+                        // Button to open the skill picker screen
+                        Button(
+                            shape = RoundedCornerShape(6.dp),
+                            onClick = {
+                                isContactPopupVisible = true
+                            }
+                        ) {
+                            Text("Edit Contacts")
                         }
                     }
                 }

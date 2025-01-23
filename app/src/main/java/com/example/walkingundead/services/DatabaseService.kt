@@ -92,6 +92,31 @@ class DatabaseService {
             })
     }
 
+    fun updateProfileSkills(email: String, newSkills: List<Skill>) {
+        val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
+
+        dbReference.orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        for (data in snapshot.children) {
+                            val profileKey = data.key
+                            if (profileKey != null) {
+                                // Update the skills list for the profile
+                                dbReference.child(profileKey).child("skills").setValue(newSkills)
+                            }
+                        }
+                    } else {
+                        Log.e("FirebaseError", "No profile found with email $email")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error fetching profile with email $email", error.toException())
+                }
+            })
+    }
+
     fun addSkillToProfile(email: String, skill: Skill) {
         val dbReference = FirebaseDatabase.getInstance().reference.child("Profiles")
 
