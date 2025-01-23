@@ -312,6 +312,9 @@ fun SOSContactItem(contact: Contact, onCall: (Context, String) -> Unit) {
 /**
  * Android Developers. (n.d.). Dialogs in Compose. Google. Retrieved January 15, 2025,
  * from https://developer.android.com/develop/ui/compose/components/dialog?hl=pt-br
+ * Displays a dialog asking the user if they want to emit a loud sound to distract zombies.
+ * The dialog includes a "YES" button to trigger the onYes action and a "NO" button to dismiss the dialog.
+ * An image (sound grenade icon) is displayed to represent the action visually.
  */
 @Composable
 fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
@@ -379,6 +382,12 @@ fun SoundGrenadeDialog(onNo: () -> Unit,  onYes: (Context) -> Unit) {
 /**
  * Android Developers. (n.d.). Build a notification. Google. Retrieved January 15, 2025,
  * from https://developer.android.com/develop/ui/views/notifications/build-notification?hl=pt-br
+ * Creates and sends a high-priority notification if a zombie is reported nearby.
+ * It ensures compatibility with Android 13+ by checking for notification permissions,
+ * and if granted, the notification is sent.
+ * It uses a PendingIntent to trigger an activity (AlertDetails) when the notification is tapped.
+ * The notification channel is only created for Android versions 26 and above.
+ *
  */
 fun sendNotificationZombiesInTheArea (channelId: String, channelName: String, channelDescription: String,
                                       context : Context
@@ -425,6 +434,11 @@ fun sendNotificationZombiesInTheArea (channelId: String, channelName: String, ch
     }
 }
 
+/**
+ * Displays markers on a map for zombie reports when filtered by the isZombiesFiltered flag.
+ * For each zombie report, a marker is placed with an icon representing a zombie,
+ * and it shows a title indicating the presence of zombies in the area.
+ */
 @Composable
 fun ZombieMarkers(zombieReports: List<ReportZombie>, isZombiesFiltered: Boolean) {
     //Show zombie markers on the Map
@@ -447,6 +461,10 @@ fun ZombieMarkers(zombieReports: List<ReportZombie>, isZombiesFiltered: Boolean)
     }
 }
 
+/**
+ * Displays a marker for the current location of the user,
+ * indicated by a red-colored icon.
+ */
 @Composable
 fun CurrentLocationMarker(currentLocation: LatLng?) {
     // Add current location marker
@@ -460,6 +478,10 @@ fun CurrentLocationMarker(currentLocation: LatLng?) {
     }
 }
 
+/**
+ * Displays markers for available medicines on the map when filtered by the isMedicineFiltered flag.
+ * For each medicine entry, the marker shows the name, type, quantity, and an icon representing the medicine.
+ */
 @Composable
 fun MedicineMarkers(
     medicines: List<MedicineEntry>,
@@ -483,6 +505,11 @@ fun MedicineMarkers(
     }
 }
 
+/**
+ * Displays markers for food items on the map, similarly filtered by the isFoodFiltered flag.
+ * The marker title shows the name of the food, and the snippet provides more details,
+ * like type, quantity, and expiration date.
+ */
 @Composable
 fun FoodMarkers(
     foods: List<Food>,
@@ -506,6 +533,10 @@ fun FoodMarkers(
     }
 }
 
+/**
+ * Displays markers for shelters when filtered by the isShelterFiltered flag.
+ * The marker shows the shelter's name and available beds (number of free beds), with an icon for shelter locations.
+ */
 @Composable
 fun ShelterMarkers(shelterList: List<Shelter>, isShelterFiltered: Boolean){
     // Add shelter markers
@@ -532,6 +563,9 @@ fun ShelterMarkers(shelterList: List<Shelter>, isShelterFiltered: Boolean){
 /**
  *  https://developer.android.com/develop/ui/compose/components/chip
  *  https://developer.android.com/develop/ui/compose/components/menu
+ *  A dropdown menu that lets users filter displayed markers on the map for zombies, medicines, food, and shelters.
+ *  Each filter option uses a FilterChip, allowing toggling between showing or hiding the corresponding markers.
+ *  When a filter option is selected, it closes the dropdown menu and updates the filtered state.
  */
 @Composable
 fun DropdownWithFilterChips(
