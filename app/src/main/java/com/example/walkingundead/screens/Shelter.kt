@@ -33,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -44,7 +43,6 @@ import com.example.walkingundead.R
 import com.example.walkingundead.models.Shelter
 import com.example.walkingundead.provider.RepositoryProvider
 import com.example.walkingundead.utilities.DropdownMenuWithDetailsShelter
-import com.example.walkingundead.utilities.FoodItem
 import com.example.walkingundead.utilities.HeaderShelter
 import com.example.walkingundead.utilities.SearchBarShelter
 import com.example.walkingundead.utilities.ShelterItem
@@ -61,7 +59,6 @@ fun Shelter(onShelterSelected: (LatLng?) -> Unit) {
 
     val database = RepositoryProvider.databaseRepository
     val scrollState = rememberScrollState()
-    val context = LocalContext.current
 
     var isDialogVisible by remember { mutableStateOf(false) }
     var shelterList by remember { mutableStateOf<List<Shelter>>(emptyList()) }
@@ -83,7 +80,7 @@ fun Shelter(onShelterSelected: (LatLng?) -> Unit) {
         }
     }
 
-    val filteredShelterList = filterSheltersOnSearch(shelterList, searchQuery, context)
+    val filteredShelterList = filterSheltersOnSearch(shelterList, searchQuery)
     val sortedShelters = sortShelters(filteredShelterList,sortBy)
 
     Box(

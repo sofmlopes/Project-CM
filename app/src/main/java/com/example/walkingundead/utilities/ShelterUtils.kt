@@ -1,7 +1,5 @@
 package com.example.walkingundead.utilities
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +20,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -315,7 +312,7 @@ fun HeaderShelter() {
  *
  */
 @Composable
-fun filterSheltersOnSearch(shelterList: List<Shelter>, searchQuery: String, context: Context): List <Shelter>{
+fun filterSheltersOnSearch(shelterList: List<Shelter>, searchQuery: String): List <Shelter>{
 
     return shelterList.filter {
         it.name?.contains(searchQuery, ignoreCase = true) ?: false || // Match name
